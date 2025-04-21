@@ -1,0 +1,98 @@
+.background {
+    background-image: url("../../background.jpg");
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .container {
+    background-color: rgba(53, 39, 208, 0.92);
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(205, 193, 193, 0.2);
+    width: 400px;
+    text-align: center;
+  }
+  
+  .title { /* Style for the main heading */
+    color: white;
+    margin-bottom: 20px;
+  }
+  
+  .container form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .container input {
+    margin-bottom: 15px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  .container button {
+    padding: 10px;
+    font-size: 16px;
+    background-color: #007bfc;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .container button:hover {
+    background-color: #005fe0;
+  }
+  
+  .applogo { /* Style for the logo */
+    width: 100px;
+    height: auto;
+    margin-bottom: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .login-link { /* Style for the login link */
+    margin-top: 15px;
+    font-size: 14px;
+    color: white;
+  }
+  
+  .login-link span {
+    color: #000000;
+    cursor: pointer;
+  }
+
+  .signup-link { /* Style for the login link */
+    margin-top: 15px;
+    font-size: 14px;
+    color: white;
+  }
+  
+  .signup-link span {
+    color: #000000;
+    cursor: pointer;
+  }
+  
+  .password-checks { /* Style for the password check list */
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    text-align: left;
+  }
+  
+  .password-check-item { /* Style for each password check item */
+    color: white;
+  }
+  
+  .error-message { /* Style for the error message */
+    color: rgb(157, 242, 255);
+    margin-bottom: 10px;
+  }
