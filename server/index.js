@@ -47,4 +47,22 @@ app.get('/api/verify', (req, res) => {
   });
 });
 
+app.post("/api/change-password", async (req, res) => {
+  const auth = req.headers.authorization;
+  if (!auth) return res.status(401).json({ msg: "Unauthorized" });
+
+  const token = auth.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = users.find((u) => u.email === decoded.email);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    const hashed = await bcrypt.hash(req.body.newPassword, 10);
+    user.password = hashed;
+    res.json({ msg: "Password changed successfully" });
+  } catch (err) {
+    res.status(401).json({ msg: "Invalid token" });
+  }
+});
+
 app.listen(5000, () => console.log("Server running on http://localhost:5000"));

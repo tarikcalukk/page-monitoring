@@ -23,7 +23,7 @@ function Login() {
 
     if (res.ok) {
       localStorage.setItem("token", data.token);
-      navigate("/dashboard");
+      navigate("/home");
     } else {
       setErrorMessage(data.msg || "Login failed");
     }

@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
+import Account from "./Account/Account";
+import Dashboard from "./Dashboard/Dashboard";
+import { FaUserCircle, FaCog, FaClipboardList, FaChartBar, FaTachometerAlt } from "react-icons/fa";
 
 function Home() {
   const navigate = useNavigate();
@@ -41,9 +44,9 @@ function Home() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "account":
-        return <div>Account Review Content</div>;
+        return <Account />;
       case "settings":
-        return <div>Settings Content</div>;
+        return <Dashboard />;
       case "logs":
         return <div>Logs Content</div>;
       case "dashboard":
@@ -65,12 +68,29 @@ function Home() {
       </div>
       <div className="main-content">
         <div className="sidebar">
-          <ul>
-            <li onClick={() => setActiveTab("account")}>Account Review</li>
-            <li onClick={() => setActiveTab("settings")}>Settings</li>
-            <li onClick={() => setActiveTab("logs")}>Logs</li>
-            <li onClick={() => setActiveTab("dashboard")}>Dashboards</li>
-            <li onClick={() => setActiveTab("statistics")}>Statistics</li>
+          <ul className="top-tabs">
+          <li onClick={() => setActiveTab("dashboard")}>
+              <FaTachometerAlt /> Dashboard
+              <span className="tooltip">Dashboard</span>
+            </li>
+            <li onClick={() => setActiveTab("logs")}>
+              <FaClipboardList /> Logs
+              <span className="tooltip">Logs</span>
+            </li>
+            <li onClick={() => setActiveTab("statistics")}>
+              <FaChartBar /> Statistics
+              <span className="tooltip">Statistics</span>
+            </li>
+          </ul>
+          <ul className="bottom-tabs">
+            <li onClick={() => setActiveTab("settings")}>
+              <FaCog /> Settings
+              <span className="tooltip">Settings</span>
+            </li>
+            <li onClick={() => setActiveTab("account")}>
+              <FaUserCircle /> Account
+              <span className="tooltip">Account review</span>
+            </li>
           </ul>
         </div>
         <div className="tab-content">{renderTabContent()}</div>
