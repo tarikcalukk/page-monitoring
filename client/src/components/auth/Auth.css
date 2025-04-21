@@ -1,5 +1,5 @@
 .background {
-    background-image: url("../../background.jpg");
+    background-image: url("../../assets/images/background.jpg");
     background-size: cover;
     background-position: center;
     height: 100vh;
@@ -17,7 +17,7 @@
     text-align: center;
   }
   
-  .title { /* Style for the main heading */
+  .title {
     color: white;
     margin-bottom: 20px;
   }
@@ -49,7 +49,7 @@
     background-color: #005fe0;
   }
   
-  .applogo { /* Style for the logo */
+  .applogo {
     width: 100px;
     height: auto;
     margin-bottom: 20px;
@@ -58,7 +58,7 @@
     margin-right: auto;
   }
   
-  .login-link { /* Style for the login link */
+  .login-link {
     margin-top: 15px;
     font-size: 14px;
     color: white;
@@ -69,7 +69,7 @@
     cursor: pointer;
   }
 
-  .signup-link { /* Style for the login link */
+  .signup-link {
     margin-top: 15px;
     font-size: 14px;
     color: white;
@@ -80,7 +80,7 @@
     cursor: pointer;
   }
   
-  .password-checks { /* Style for the password check list */
+  .password-checks {
     list-style-type: none;
     padding-left: 0;
     margin-top: 5px;
@@ -88,11 +88,11 @@
     text-align: left;
   }
   
-  .password-check-item { /* Style for each password check item */
+  .password-check-item {
     color: white;
   }
   
-  .error-message { /* Style for the error message */
+  .error-message {
     color: rgb(157, 242, 255);
     margin-bottom: 10px;
   }
