@@ -31,4 +31,20 @@ app.post("/api/login", async (req, res) => {
   res.json({ token });
 });
 
+app.get('/api/verify', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ isValid: false, msg: 'No token provided' }); 
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ isValid: false, msg: 'Invalid token' }); 
+    }
+
+    res.json({ isValid: true, user: decoded }); 
+  });
+});
+
 app.listen(5000, () => console.log("Server running on http://localhost:5000"));
