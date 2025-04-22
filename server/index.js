@@ -12,11 +12,36 @@ const users = []; // Store users in memory
 
 app.post("/api/register", async (req, res) => {
   const { email, password } = req.body;
-  const existing = users.find(u => u.email === email);
-  if (existing) return res.status(400).json({ msg: "User already exists" });
 
-  const hashed = await bcrypt.hash(password, 10);
-  users.push({ email, password: hashed });
+  if (!email || !password) {
+    return res.status(400).json({ msg: "Email and password are required" });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ msg: "Invalid email format" });
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({ msg: "Password must be at least 8 characters long" });
+  }
+
+  // Check if user already exists
+  const existing = users.find((u) => u.email === email);
+  if (existing) {
+    return res.status(400).json({ msg: "User already exists" });
+  }
+
+  try {
+    const hashed = await bcrypt.hash(password, 10);
+
+    users.push({ email, password: hashed });
+
+    res.status(201).json({ msg: "User registered successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+  }
 });
 
 app.post("/api/login", async (req, res) => {
@@ -60,6 +85,25 @@ app.post("/api/change-password", async (req, res) => {
     const hashed = await bcrypt.hash(req.body.newPassword, 10);
     user.password = hashed;
     res.json({ msg: "Password changed successfully" });
+  } catch (err) {
+    res.status(401).json({ msg: "Invalid token" });
+  }
+});
+
+app.delete("/api/delete-account", (req, res) => {
+  const auth = req.headers.authorization;
+  if (!auth) return res.status(401).json({ msg: "Unauthorized" });
+
+  const token = auth.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userIndex = users.findIndex((u) => u.email === decoded.email);
+
+    if (userIndex === -1) return res.status(404).json({ msg: "User not found" });
+
+    users.splice(userIndex, 1); // Uklanjanje korisnika iz memorije
+
+    res.json({ msg: "Account deleted successfully" });
   } catch (err) {
     res.status(401).json({ msg: "Invalid token" });
   }
