@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
 import Account from "./Account/Account";
-import Dashboard from "./Dashboard/Dashboard";
+import Settings from "./Settings/Settings";
 import { FaUserCircle, FaCog, FaClipboardList, FaChartBar, FaTachometerAlt } from "react-icons/fa";
 
 function Home() {
@@ -46,7 +46,7 @@ function Home() {
       case "account":
         return <Account />;
       case "settings":
-        return <Dashboard />;
+        return <Settings />;
       case "logs":
         return <div>Logs Content</div>;
       case "dashboard":

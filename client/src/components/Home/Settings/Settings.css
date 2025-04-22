@@ -1,0 +1,71 @@
+body[data-theme="light"] {
+  background-color: #ffffff;
+  color: #2c3e50;
+}
+
+body[data-theme="dark"] {
+  background-color: #2c3e50;
+  color: #ffffff;
+}
+
+.settings-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: var(--background-color, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: 'Poppins', sans-serif;
+}
+
+.settings-container h2 {
+  font-size: 28px;
+  color: var(--text-color, #2c3e50);
+  margin-bottom: 20px;
+}
+
+.settings-section {
+  margin-bottom: 30px;
+}
+
+.settings-section h3 {
+  font-size: 20px;
+  color: #34495e;
+  margin-bottom: 10px;
+}
+
+.settings-container label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #2c3e50;
+}
+
+.settings-container input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.settings-container input[type="number"],
+.settings-container select {
+  margin-left: 10px;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.settings-container .save-button {
+  padding: 12px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.settings-container .save-button:hover {
+  background-color: #2980b9;
+}
