@@ -2,7 +2,6 @@
   max-width: 80%; 
   margin: 50px auto; 
   padding: 40px; 
-  background-color: #ffffff; 
   border-radius: 12px;
   font-family: 'Poppins', sans-serif;
   display: flex;
@@ -56,7 +55,7 @@ h3 {
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  margin-left: 150px; /* Add margin to move the button to the right */
+  margin-left: 150px;
 }
 
 .password-form button:hover {
@@ -104,7 +103,7 @@ h3 {
 .toggle-link {
   background: none;
   border: none;
-  color: #3498db; /* Blue color for the link */
+  color: #3498db;
   font-size: 16px;
   text-decoration: underline;
   cursor: pointer;
@@ -113,7 +112,7 @@ h3 {
 }
 
 .toggle-link:hover {
-  color: #2980b9; /* Darker blue on hover */
+  color: #2980b9;
 }
 
 .password-checks {
@@ -125,10 +124,10 @@ h3 {
 
 .password-check-item {
   margin-bottom: 5px;
-  color: #e74c3c; /* Ensure the text is red and visible */
+  color: #e74c3c;
   
 }
 
 .password-check-item.valid {
-  color: #2ecc71; /* Green for valid checks */
+  color: #2ecc71;
 }

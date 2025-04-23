@@ -3,19 +3,21 @@ import "./Settings.css";
 
 function Settings() {
   const [emailNotifications, setEmailNotifications] = useState(true);
-  const [smsNotifications, setSmsNotifications] = useState(false);
   const [monitoringInterval, setMonitoringInterval] = useState(5);
-  const [theme, setTheme] = useState("light");
+  const [maxErrors, setMaxErrors] = useState(3);
+  const [retryDelay, setRetryDelay] = useState(10);
+  const [autoRestart, setAutoRestart] = useState(false);
 
   const handleSaveSettings = () => {
     alert("Settings saved successfully!");
-    // Here, you can send the settings to the backend via an API call
+    // Here, you can add an API call to save the settings
   };
 
   return (
     <div className="settings-container">
       <h2>Settings</h2>
 
+      {/* Notification Settings */}
       <div className="settings-section">
         <h3>Notification Settings</h3>
         <label>
@@ -26,16 +28,9 @@ function Settings() {
           />
           Enable Email Notifications
         </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={smsNotifications}
-            onChange={(e) => setSmsNotifications(e.target.checked)}
-          />
-          Enable SMS Notifications
-        </label>
       </div>
 
+      {/* Monitoring Settings */}
       <div className="settings-section">
         <h3>Monitoring Settings</h3>
         <label>
@@ -47,19 +42,35 @@ function Settings() {
             min="1"
           />
         </label>
-      </div>
-
-      <div className="settings-section">
-        <h3>Appearance</h3>
         <label>
-          Theme:
-          <select value={theme} onChange={(e) => setTheme(e.target.value)}>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
+          Max Errors Before Notification:
+          <input
+            type="number"
+            value={maxErrors}
+            onChange={(e) => setMaxErrors(e.target.value)}
+            min="1"
+          />
+        </label>
+        <label>
+          Retry Delay (in seconds):
+          <input
+            type="number"
+            value={retryDelay}
+            onChange={(e) => setRetryDelay(e.target.value)}
+            min="1"
+          />
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={autoRestart}
+            onChange={(e) => setAutoRestart(e.target.checked)}
+          />
+          Enable Auto-Restart Monitoring
         </label>
       </div>
 
+      {/* Save Button */}
       <button className="save-button" onClick={handleSaveSettings}>
         Save Settings
       </button>
