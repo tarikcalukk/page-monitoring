@@ -4,6 +4,7 @@ import "./Home.css";
 import Account from "./Account/Account";
 import Settings from "./Settings/Settings";
 import { FaUserCircle, FaCog, FaClipboardList, FaChartBar, FaTachometerAlt } from "react-icons/fa";
+import Dashboard from "./Dashboard/Dashboard";
 
 function Home() {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ function Home() {
       case "logs":
         return <div>Logs Content</div>;
       case "dashboard":
-        return <div>Dashboard Overview</div>;
+        return <Dashboard />;
       case "statistics":
         return <div>Statistics Content</div>;
       default:

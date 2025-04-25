@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const https = require("https");
 
 const app = express();
 app.use(cors());
@@ -106,6 +107,32 @@ app.delete("/api/delete-account", (req, res) => {
     res.json({ msg: "Account deleted successfully" });
   } catch (err) {
     res.status(401).json({ msg: "Invalid token" });
+  }
+});
+
+app.post("/api/validate-url", (req, res) => {
+  const { url } = req.body;
+
+  if (!url) {
+    return res.status(400).json({ msg: "URL is required" });
+  }
+
+  try {
+    const request = https.request(url, { method: "HEAD" }, (response) => {
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        res.status(200).json({ msg: "URL is reachable" });
+      } else {
+        res.status(response.statusCode).json({ msg: `Server responded with status: ${response.statusCode}` });
+      }
+    });
+
+    request.on("error", () => {
+      res.status(500).json({ msg: "The URL is unreachable or invalid." });
+    });
+
+    request.end();
+  } catch (error) {
+    res.status(500).json({ msg: "The URL is unreachable or invalid." });
   }
 });
 
