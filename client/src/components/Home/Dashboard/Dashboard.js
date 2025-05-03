@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Dashboard.css";
 
 function Dashboard() {
   const [urls, setUrls] = useState([]); // List of URLs
   const [newUrl, setNewUrl] = useState(""); // Input for adding a new URL
   const [isValidating, setIsValidating] = useState(false); // Validation state
+  const monitoringRefs = useRef({}); // previous DOM content
 
   // Add a new URL to the list
   const handleAddUrl = async () => {
@@ -73,11 +74,63 @@ function Dashboard() {
     setUrls(updatedUrls);
   };
 
+  useEffect(() => {
+    const intervals = [];
+  
+    urls.forEach((entry) => {
+      if (entry.active && entry.trackingType === "DOM") {
+        if (!monitoringRefs.current[entry.url]) {
+          monitoringRefs.current[entry.url] = [];
+        }
+  
+        const interval = setInterval(async () => {
+          try {
+            const response = await fetch("http://localhost:5000/api/fetch-dom-content", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url: entry.url }),
+            });
+  
+            const data = await response.json();
+            if (response.ok) {
+              const newContent = data.content;
+              const oldContent = monitoringRefs.current[entry.url];
+  
+              const added = newContent.filter((item) => !oldContent.includes(item));
+              const removed = oldContent.filter((item) => !newContent.includes(item));
+  
+              if (added.length || removed.length) {
+                let message = `Detected changes on ${entry.url}:\n`;
+  
+                if (added.length) {
+                  message += `\n➕ New content:\n- ` + added.slice(0, 3).join("\n- ");
+                }
+                if (removed.length) {
+                  message += `\n\n➖ Removed content:\n- ` + removed.slice(0, 3).join("\n- ");
+                }
+  
+                alert(message);
+              }
+  
+              monitoringRefs.current[entry.url] = newContent;
+            }
+          } catch (err) {
+            console.error("Error monitoring DOM content:", err);
+          }
+        }, 5000); // 5 sekundi
+  
+        intervals.push(interval);
+      }
+    });
+  
+    return () => intervals.forEach(clearInterval);
+  }, [urls]);
+  
+
   return (
     <div className="dashboard-container">
       <h2>Dashboard</h2>
 
-      {/* Add URL Section */}
       <div className="add-url-section">
         <h3>Add URL for Tracking</h3>
         <input
@@ -92,7 +145,6 @@ function Dashboard() {
         </button>
       </div>
 
-      {/* URL List Section */}
       <div className="url-list-section">
         <h3>Tracked URLs</h3>
         {urls.length === 0 ? (

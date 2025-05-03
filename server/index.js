@@ -3,6 +3,7 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const https = require("https");
+const cheerio = require("cheerio");
 
 const app = express();
 app.use(cors());
@@ -133,6 +134,28 @@ app.post("/api/validate-url", (req, res) => {
     request.end();
   } catch (error) {
     res.status(500).json({ msg: "The URL is unreachable or invalid." });
+  }
+});
+
+app.post("/api/fetch-dom-content", async (req, res) => {
+  const { url } = req.body;
+
+  try {
+    const response = await fetch(url);
+    const html = await response.text();
+    const $ = cheerio.load(html);
+
+    // Primjer: uzmi sve h1, h2, p (možeš proširiti na class-e specifične za članke)
+    const content = [];
+    $("h1, h2, p").each((i, el) => {
+      const text = $(el).text().trim();
+      if (text.length > 30) content.push(text); // ignoriši bezvezne elemente
+    });
+
+    res.json({ content });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Failed to fetch page content." });
   }
 });
 
