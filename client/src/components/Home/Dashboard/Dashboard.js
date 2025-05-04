@@ -6,6 +6,9 @@ function Dashboard() {
   const [newUrl, setNewUrl] = useState(""); // Input for adding a new URL
   const [isValidating, setIsValidating] = useState(false); // Validation state
   const monitoringRefs = useRef({}); // previous DOM content
+  const hashRefs = useRef({}); // previous hash
+  const hashContentRefs = useRef({}); // previous hash content
+
 
   // Add a new URL to the list
   const handleAddUrl = async () => {
@@ -78,53 +81,76 @@ function Dashboard() {
     const intervals = [];
   
     urls.forEach((entry) => {
-      if (entry.active && entry.trackingType === "DOM") {
-        if (!monitoringRefs.current[entry.url]) {
-          monitoringRefs.current[entry.url] = [];
-        }
+      if (!entry.active) return;
   
-        const interval = setInterval(async () => {
-          try {
-            const response = await fetch("http://localhost:5000/api/fetch-dom-content", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ url: entry.url }),
-            });
+      const interval = setInterval(async () => {
+        try {
+          const response = await fetch("http://localhost:5000/api/fetch-content", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: entry.url }),
+          });
   
-            const data = await response.json();
-            if (response.ok) {
-              const newContent = data.content;
-              const oldContent = monitoringRefs.current[entry.url];
+          const data = await response.json();
+          if (!response.ok) return;
   
+          if (entry.trackingType === "DOM") {
+            const newContent = data.content;
+            const oldContent = monitoringRefs.current[entry.url] || [];
+  
+            const added = newContent.filter((item) => !oldContent.includes(item));
+            const removed = oldContent.filter((item) => !newContent.includes(item));
+  
+            if (added.length || removed.length) {
+              let message = `Detected changes (DOM) on ${entry.url}:\n`;
+  
+              if (added.length)
+                message += `\n➕ New:\n- ` + added.slice(0, 3).join("\n- ");
+              if (removed.length)
+                message += `\n\n➖ Removed:\n- ` + removed.slice(0, 3).join("\n- ");
+  
+              alert(message);
+            }
+  
+            monitoringRefs.current[entry.url] = newContent;
+          }
+  
+          if (entry.trackingType === "HASH") {
+            const newHash = data.hash;
+            const newContent = data.content;
+            const oldHash = hashRefs.current[entry.url];
+            const oldContent = hashContentRefs.current[entry.url] || [];
+          
+            if (oldHash && oldHash !== newHash) {
               const added = newContent.filter((item) => !oldContent.includes(item));
               const removed = oldContent.filter((item) => !newContent.includes(item));
-  
-              if (added.length || removed.length) {
-                let message = `Detected changes on ${entry.url}:\n`;
-  
-                if (added.length) {
-                  message += `\n➕ New content:\n- ` + added.slice(0, 3).join("\n- ");
-                }
-                if (removed.length) {
-                  message += `\n\n➖ Removed content:\n- ` + removed.slice(0, 3).join("\n- ");
-                }
-  
-                alert(message);
+          
+              let message = `Detected changes (HASH) on ${entry.url}:\n`;
+          
+              if (added.length) {
+                message += `\n➕ New content:\n- ` + added.slice(0, 3).join("\n- ");
               }
-  
-              monitoringRefs.current[entry.url] = newContent;
+              if (removed.length) {
+                message += `\n\n➖ Removed content:\n- ` + removed.slice(0, 3).join("\n- ");
+              }
+          
+              alert(message);
             }
-          } catch (err) {
-            console.error("Error monitoring DOM content:", err);
-          }
-        }, 5000); // 5 sekundi
+          
+            hashRefs.current[entry.url] = newHash;
+            hashContentRefs.current[entry.url] = newContent;
+          }          
   
-        intervals.push(interval);
-      }
+        } catch (err) {
+          console.error("Monitoring error:", err);
+        }
+      }, 5000); // check every 5 seconds
+  
+      intervals.push(interval);
     });
   
     return () => intervals.forEach(clearInterval);
-  }, [urls]);
+  }, [urls]);  
   
 
   return (

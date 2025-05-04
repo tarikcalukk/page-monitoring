@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const https = require("https");
 const cheerio = require("cheerio");
+const crypto = require("crypto");
 
 const app = express();
 app.use(cors());
@@ -137,7 +138,7 @@ app.post("/api/validate-url", (req, res) => {
   }
 });
 
-app.post("/api/fetch-dom-content", async (req, res) => {
+app.post("/api/fetch-content", async (req, res) => {
   const { url } = req.body;
 
   try {
@@ -145,14 +146,16 @@ app.post("/api/fetch-dom-content", async (req, res) => {
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    // Primjer: uzmi sve h1, h2, p (možeš proširiti na class-e specifične za članke)
     const content = [];
     $("h1, h2, p").each((i, el) => {
       const text = $(el).text().trim();
       if (text.length > 30) content.push(text); // ignoriši bezvezne elemente
     });
 
-    res.json({ content });
+    const fullText = content.join(" ");
+    const hash = crypto.createHash("sha256").update(fullText).digest("hex");
+
+    res.json({ content, hash });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Failed to fetch page content." });
