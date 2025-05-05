@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const https = require("https");
 const cheerio = require("cheerio");
 const crypto = require("crypto");
+const fetch = require("node-fetch"); 
 
 const app = express();
 app.use(cors());
@@ -38,14 +39,14 @@ app.post("/api/register", async (req, res) => {
   try {
     const hashed = await bcrypt.hash(password, 10);
 
-    users.push({ email, password: hashed });
+    users.push({ email, password: hashed, urls: [], logs: [] });
 
     res.status(201).json({ msg: "User registered successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server error" });
   }
-});
+}); //testirana radi
 
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
@@ -57,7 +58,7 @@ app.post("/api/login", async (req, res) => {
 
   const token = jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: "1h" });
   res.json({ token });
-});
+}); // testirana radi
 
 app.get('/api/verify', (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -73,7 +74,7 @@ app.get('/api/verify', (req, res) => {
 
     res.json({ isValid: true, user: decoded }); 
   });
-});
+}); //testirana radi
 
 app.post("/api/change-password", async (req, res) => {
   const auth = req.headers.authorization;
@@ -91,7 +92,7 @@ app.post("/api/change-password", async (req, res) => {
   } catch (err) {
     res.status(401).json({ msg: "Invalid token" });
   }
-});
+}); //testirana radi
 
 app.delete("/api/delete-account", (req, res) => {
   const auth = req.headers.authorization;
@@ -104,13 +105,13 @@ app.delete("/api/delete-account", (req, res) => {
 
     if (userIndex === -1) return res.status(404).json({ msg: "User not found" });
 
-    users.splice(userIndex, 1); // Uklanjanje korisnika iz memorije
+    users.splice(userIndex, 1); // Remove user from the array
 
     res.json({ msg: "Account deleted successfully" });
   } catch (err) {
     res.status(401).json({ msg: "Invalid token" });
   }
-});
+}); //testirana radi
 
 app.post("/api/validate-url", (req, res) => {
   const { url } = req.body;
@@ -136,7 +137,7 @@ app.post("/api/validate-url", (req, res) => {
   } catch (error) {
     res.status(500).json({ msg: "The URL is unreachable or invalid." });
   }
-});
+}); //testirana radi
 
 app.post("/api/fetch-content", async (req, res) => {
   const { url } = req.body;
@@ -146,19 +147,75 @@ app.post("/api/fetch-content", async (req, res) => {
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    const content = [];
-    $("h1, h2, p").each((i, el) => {
-      const text = $(el).text().trim();
-      if (text.length > 30) content.push(text); // ignoriši bezvezne elemente
+    // Dohvati cijeli HTML sadržaj
+    const fullHtml = $.html();
+
+    // Dohvati inline stilove i vanjske stilove
+    let styles = $("style").map((i, el) => $(el).html()).get().join('\n'); // inline stilovi
+    const externalStyles = $("link[rel='stylesheet']").map((i, el) => $(el).attr("href")).get();
+    
+    // Preuzmi vanjske stilove (ako je potrebno)
+    for (let styleUrl of externalStyles) {
+      const styleResponse = await fetch(styleUrl);
+      const styleText = await styleResponse.text();
+      styles += '\n' + styleText;
+    }
+
+    const htmlHash = crypto.createHash("sha256").update(fullHtml).digest("hex");
+    const stylesHash = crypto.createHash("sha256").update(styles).digest("hex");
+
+    res.json({
+      html: fullHtml,
+      html_hash: htmlHash,
+      styles: styles,
+      styles_hash: stylesHash
     });
 
-    const fullText = content.join(" ");
-    const hash = crypto.createHash("sha256").update(fullText).digest("hex");
-
-    res.json({ content, hash });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Failed to fetch page content." });
+  }
+}); //testirana radi
+
+app.get("/api/logs", (req, res) => {
+  const auth = req.headers.authorization;
+  if (!auth) return res.status(401).json({ msg: "Unauthorized" });
+
+  const token = auth.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = users.find((u) => u.email === decoded.email);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    res.json(user.logs || []);
+  } catch (err) {
+    res.status(401).json({ msg: "Invalid token" });
+  }
+});
+
+app.post("/api/log", async (req, res) => {
+  const { email, url, method, changes } = req.body;
+
+  if (!email || !url || !method || !changes) {
+    return res.status(400).json({ msg: "Missing log data" });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    user.logs.push({
+      url,
+      method,
+      changes,
+      date: new Date().toISOString(),
+    });
+
+    await user.save();
+    res.status(200).json({ msg: "Log saved" });
+  } catch (err) {
+    console.error("Error saving log:", err);
+    res.status(500).json({ msg: "Server error" });
   }
 });
 

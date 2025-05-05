@@ -2,15 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import "./Dashboard.css";
 
 function Dashboard() {
-  const [urls, setUrls] = useState([]); // List of URLs
-  const [newUrl, setNewUrl] = useState(""); // Input for adding a new URL
-  const [isValidating, setIsValidating] = useState(false); // Validation state
-  const monitoringRefs = useRef({}); // previous DOM content
-  const hashRefs = useRef({}); // previous hash
-  const hashContentRefs = useRef({}); // previous hash content
+  const [urls, setUrls] = useState([]);
+  const [newUrl, setNewUrl] = useState("");
+  const [isValidating, setIsValidating] = useState(false);
+  const monitoringRefs = useRef({});
+  const hashRefs = useRef({});
+  const hashContentRefs = useRef({});
 
+  const userToken = localStorage.getItem("token");
 
-  // Add a new URL to the list
   const handleAddUrl = async () => {
     if (!newUrl.trim()) {
       alert("URL cannot be empty.");
@@ -22,7 +22,6 @@ function Dashboard() {
       return;
     }
 
-    // Validate the URL using the proxy server
     setIsValidating(true);
     try {
       const response = await fetch("http://localhost:5000/api/validate-url", {
@@ -52,26 +51,22 @@ function Dashboard() {
     }
     setIsValidating(false);
 
-    // Add the URL to the list if validation passes
     setUrls([...urls, { url: newUrl, active: true, trackingType: "DOM" }]);
     setNewUrl("");
   };
 
-  // Toggle active/inactive status for a URL
   const toggleUrlStatus = (index) => {
     const updatedUrls = [...urls];
     updatedUrls[index].active = !updatedUrls[index].active;
     setUrls(updatedUrls);
   };
 
-  // Change tracking type for a URL
   const changeTrackingType = (index, type) => {
     const updatedUrls = [...urls];
     updatedUrls[index].trackingType = type;
     setUrls(updatedUrls);
   };
 
-  // Remove a URL from the list
   const handleRemoveUrl = (index) => {
     const updatedUrls = urls.filter((_, i) => i !== index);
     setUrls(updatedUrls);
@@ -79,10 +74,10 @@ function Dashboard() {
 
   useEffect(() => {
     const intervals = [];
-  
+
     urls.forEach((entry) => {
       if (!entry.active) return;
-  
+
       const interval = setInterval(async () => {
         try {
           const response = await fetch("http://localhost:5000/api/fetch-content", {
@@ -90,73 +85,90 @@ function Dashboard() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ url: entry.url }),
           });
-  
+
           const data = await response.json();
           if (!response.ok) return;
-  
+
           if (entry.trackingType === "DOM") {
             const newContent = data.content;
             const oldContent = monitoringRefs.current[entry.url] || [];
-  
             const added = newContent.filter((item) => !oldContent.includes(item));
             const removed = oldContent.filter((item) => !newContent.includes(item));
-  
+
             if (added.length || removed.length) {
               let message = `Detected changes (DOM) on ${entry.url}:\n`;
-  
-              if (added.length)
-                message += `\n➕ New:\n- ` + added.slice(0, 3).join("\n- ");
-              if (removed.length)
-                message += `\n\n➖ Removed:\n- ` + removed.slice(0, 3).join("\n- ");
-  
+              if (added.length) message += `\n➕ New:\n- ` + added.slice(0, 3).join("\n- ");
+              if (removed.length) message += `\n\n➖ Removed:\n- ` + removed.slice(0, 3).join("\n- ");
               alert(message);
+
+              await fetch("http://localhost:5000/api/log", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${userToken}`,
+                },
+                body: JSON.stringify({
+                  url: entry.url,
+                  type: "DOM",
+                  added,
+                  removed,
+                  timestamp: new Date().toISOString(),
+                }),
+              });
             }
-  
+
             monitoringRefs.current[entry.url] = newContent;
           }
-  
+
           if (entry.trackingType === "HASH") {
             const newHash = data.hash;
             const newContent = data.content;
             const oldHash = hashRefs.current[entry.url];
             const oldContent = hashContentRefs.current[entry.url] || [];
-          
+
             if (oldHash && oldHash !== newHash) {
               const added = newContent.filter((item) => !oldContent.includes(item));
               const removed = oldContent.filter((item) => !newContent.includes(item));
-          
+
               let message = `Detected changes (HASH) on ${entry.url}:\n`;
-          
-              if (added.length) {
-                message += `\n➕ New content:\n- ` + added.slice(0, 3).join("\n- ");
-              }
-              if (removed.length) {
-                message += `\n\n➖ Removed content:\n- ` + removed.slice(0, 3).join("\n- ");
-              }
-          
+              if (added.length) message += `\n➕ New content:\n- ` + added.slice(0, 3).join("\n- ");
+              if (removed.length) message += `\n\n➖ Removed content:\n- ` + removed.slice(0, 3).join("\n- ");
               alert(message);
+
+              await fetch("http://localhost:5000/api/log", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${userToken}`,
+                },
+                body: JSON.stringify({
+                  url: entry.url,
+                  type: "HASH",
+                  added,
+                  removed,
+                  timestamp: new Date().toISOString(),
+                }),
+              });
             }
-          
+
             hashRefs.current[entry.url] = newHash;
             hashContentRefs.current[entry.url] = newContent;
-          }          
-  
+          }
         } catch (err) {
           console.error("Monitoring error:", err);
         }
-      }, 5000); // check every 5 seconds
-  
+      }, 5000);
+
       intervals.push(interval);
     });
-  
+
     return () => intervals.forEach(clearInterval);
-  }, [urls]);  
+  }, [urls, userToken]);  
   
 
   return (
     <div className="dashboard-container">
       <h2>Dashboard</h2>
-
       <div className="add-url-section">
         <h3>Add URL for Tracking</h3>
         <input
@@ -170,7 +182,6 @@ function Dashboard() {
           {isValidating ? "Validating..." : "Add URL"}
         </button>
       </div>
-
       <div className="url-list-section">
         <h3>Tracked URLs</h3>
         {urls.length === 0 ? (
@@ -200,9 +211,7 @@ function Dashboard() {
                   <td>
                     <select
                       value={url.trackingType}
-                      onChange={(e) =>
-                        changeTrackingType(index, e.target.value)
-                      }
+                      onChange={(e) => changeTrackingType(index, e.target.value)}
                     >
                       <option value="DOM">DOM</option>
                       <option value="HASH">HASH</option>
