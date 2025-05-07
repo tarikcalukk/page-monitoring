@@ -1,15 +1,42 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./Dashboard.css";
 
 function Dashboard() {
-  const [urls, setUrls] = useState([]);
-  const [newUrl, setNewUrl] = useState("");
-  const [isValidating, setIsValidating] = useState(false);
+  const [urls, setUrls] = useState([]); // State za URL-ove
+  const [newUrl, setNewUrl] = useState(""); // State za unos novog URL-a
+  const [isValidating, setIsValidating] = useState(false); // State za validaciju
   const monitoringRefs = useRef({});
   const hashRefs = useRef({});
   const hashContentRefs = useRef({});
 
   const userToken = localStorage.getItem("token");
+
+  // Funkcija za dohvaćanje URL-ova sa servera
+  const fetchUrls = useCallback(async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/get-urls", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to fetch URLs");
+      }
+  
+      const data = await response.json();
+      setUrls(data.urls || []); // Postavi URL-ove sa stanjima iz backend-a
+    } catch (err) {
+      console.error("Error fetching URLs:", err);
+    }
+  }, [userToken]);
+
+  // Učitaj URL-ove kada se komponenta učita
+  useEffect(() => {
+    fetchUrls();
+  }, [fetchUrls]);
 
   const handleAddUrl = async () => {
     if (!newUrl.trim()) {
@@ -24,35 +51,28 @@ function Dashboard() {
 
     setIsValidating(true);
     try {
-      const response = await fetch("http://localhost:5000/api/validate-url", {
+      const saveResponse = await fetch("http://localhost:5000/api/save-url", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify({ url: newUrl }),
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        if (response.status === 403) {
-          alert("The server refused to authorize the request (403 Forbidden).");
-        } else if (response.status === 400) {
-          alert("The server returned a bad request (400). Please check the URL.");
-        } else {
-          alert(data.msg);
-        }
-        setIsValidating(false);
+      const saveData = await saveResponse.json();
+      if (!saveResponse.ok) {
+        console.error("Failed to save URL:", saveData.msg);
         return;
       }
-    } catch (error) {
-      alert("The URL is unreachable. Please check the URL and try again.");
-      setIsValidating(false);
-      return;
+
+      // Dodaj novi URL u stanje
+      setUrls([...urls, { url: newUrl, active: true, trackingType: "DOM" }]);
+      setNewUrl("");
+    } catch (err) {
+      console.error("Error saving URL:", err);
     }
     setIsValidating(false);
-
-    setUrls([...urls, { url: newUrl, active: true, trackingType: "DOM" }]);
-    setNewUrl("");
   };
 
   const toggleUrlStatus = (index) => {
@@ -74,10 +94,10 @@ function Dashboard() {
 
   useEffect(() => {
     const intervals = [];
-
+  
     urls.forEach((entry) => {
       if (!entry.active) return;
-
+  
       const interval = setInterval(async () => {
         try {
           const response = await fetch("http://localhost:5000/api/fetch-content", {
@@ -85,23 +105,24 @@ function Dashboard() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ url: entry.url }),
           });
-
+  
           const data = await response.json();
           if (!response.ok) return;
-
+  
           if (entry.trackingType === "DOM") {
             const newContent = data.content;
             const oldContent = monitoringRefs.current[entry.url] || [];
             const added = newContent.filter((item) => !oldContent.includes(item));
             const removed = oldContent.filter((item) => !newContent.includes(item));
-
+  
             if (added.length || removed.length) {
               let message = `Detected changes (DOM) on ${entry.url}:\n`;
               if (added.length) message += `\n➕ New:\n- ` + added.slice(0, 3).join("\n- ");
               if (removed.length) message += `\n\n➖ Removed:\n- ` + removed.slice(0, 3).join("\n- ");
               alert(message);
-
-              await fetch("http://localhost:5000/api/log", {
+  
+              // Pošalji log na backend
+              await fetch("http://localhost:5000/api/add-log", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -109,33 +130,32 @@ function Dashboard() {
                 },
                 body: JSON.stringify({
                   url: entry.url,
-                  type: "DOM",
-                  added,
-                  removed,
-                  timestamp: new Date().toISOString(),
+                  method: "DOM",
+                  changes: { added, removed },
                 }),
               });
             }
-
+  
             monitoringRefs.current[entry.url] = newContent;
           }
-
+  
           if (entry.trackingType === "HASH") {
             const newHash = data.hash;
             const newContent = data.content;
             const oldHash = hashRefs.current[entry.url];
             const oldContent = hashContentRefs.current[entry.url] || [];
-
+  
             if (oldHash && oldHash !== newHash) {
               const added = newContent.filter((item) => !oldContent.includes(item));
               const removed = oldContent.filter((item) => !newContent.includes(item));
-
+  
               let message = `Detected changes (HASH) on ${entry.url}:\n`;
               if (added.length) message += `\n➕ New content:\n- ` + added.slice(0, 3).join("\n- ");
               if (removed.length) message += `\n\n➖ Removed content:\n- ` + removed.slice(0, 3).join("\n- ");
               alert(message);
-
-              await fetch("http://localhost:5000/api/log", {
+  
+              // Pošalji log na backend
+              await fetch("http://localhost:5000/api/add-log", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -143,14 +163,12 @@ function Dashboard() {
                 },
                 body: JSON.stringify({
                   url: entry.url,
-                  type: "HASH",
-                  added,
-                  removed,
-                  timestamp: new Date().toISOString(),
+                  method: "HASH",
+                  changes: { added, removed },
                 }),
               });
             }
-
+  
             hashRefs.current[entry.url] = newHash;
             hashContentRefs.current[entry.url] = newContent;
           }
@@ -158,13 +176,12 @@ function Dashboard() {
           console.error("Monitoring error:", err);
         }
       }, 5000);
-
+  
       intervals.push(interval);
     });
-
-    return () => intervals.forEach(clearInterval);
-  }, [urls, userToken]);  
   
+    return () => intervals.forEach(clearInterval);
+  }, [urls, userToken]);
 
   return (
     <div className="dashboard-container">

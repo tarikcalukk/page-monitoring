@@ -6,13 +6,28 @@ const https = require("https");
 const cheerio = require("cheerio");
 const crypto = require("crypto");
 const fetch = require("node-fetch"); 
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const JWT_SECRET = "secret123";
-const users = []; // Store users in memory
+const USERS_FILE = path.join(__dirname, "users.json");
+
+function loadUsers() {
+  if (fs.existsSync(USERS_FILE)) {
+    const raw = fs.readFileSync(USERS_FILE);
+    return JSON.parse(raw);
+  }
+  return [];
+}
+function saveUsers(data) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2));
+}
+
+let users = loadUsers();
 
 app.post("/api/register", async (req, res) => {
   const { email, password } = req.body;
@@ -40,6 +55,7 @@ app.post("/api/register", async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
 
     users.push({ email, password: hashed, urls: [], logs: [] });
+    saveUsers(users);
 
     res.status(201).json({ msg: "User registered successfully" });
   } catch (err) {
@@ -50,6 +66,7 @@ app.post("/api/register", async (req, res) => {
 
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
+  const users = loadUsers();
   const user = users.find(u => u.email === email);
   if (!user) return res.status(400).json({ msg: "User not found" });
 
@@ -83,11 +100,14 @@ app.post("/api/change-password", async (req, res) => {
   const token = auth.split(" ")[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    const users = loadUsers();
     const user = users.find((u) => u.email === decoded.email);
     if (!user) return res.status(404).json({ msg: "User not found" });
 
     const hashed = await bcrypt.hash(req.body.newPassword, 10);
     user.password = hashed;
+    saveUsers(users);
+
     res.json({ msg: "Password changed successfully" });
   } catch (err) {
     res.status(401).json({ msg: "Invalid token" });
@@ -101,14 +121,20 @@ app.delete("/api/delete-account", (req, res) => {
   const token = auth.split(" ")[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const userIndex = users.findIndex((u) => u.email === decoded.email);
+    let usersList = loadUsers();
+    const userIndex = usersList.findIndex((u) => u.email === decoded.email);
 
     if (userIndex === -1) return res.status(404).json({ msg: "User not found" });
 
-    users.splice(userIndex, 1); // Remove user from the array
+    // Ukloni korisnika iz liste
+    usersList.splice(userIndex, 1);
+
+    users = usersList;
+    saveUsers(users);
 
     res.json({ msg: "Account deleted successfully" });
   } catch (err) {
+    console.error("Error deleting account:", err);
     res.status(401).json({ msg: "Invalid token" });
   }
 }); //testirana radi
@@ -139,6 +165,106 @@ app.post("/api/validate-url", (req, res) => {
   }
 }); //testirana radi
 
+
+app.post("/api/save-url", (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ msg: "No token provided." });
+
+  const token = authHeader.split(" ")[1];
+  let email;
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    email = decoded.email;
+  } catch (err) {
+    return res.status(401).json({ msg: "Invalid token." });
+  }
+
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ msg: "URL is required." });
+
+  const users = loadUsers();
+  const user = users.find((u) => u.email === email);
+
+  if (!user) {
+    return res.status(404).json({ msg: "User not found." });
+  }
+
+  if (!user.urls.includes(url)) {
+    user.urls.push(url);
+    saveUsers(users);
+  }
+
+  res.json({ msg: "URL saved successfully." });
+});
+
+app.get("/api/get-urls", (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ msg: "No token provided." });
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const users = loadUsers();
+    const user = users.find((u) => u.email === decoded.email);
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found." });
+    }
+
+    // Transformacija URL-ova u objekte ako su stringovi
+    const urls = user.urls.map((url) =>
+      typeof url === "string"
+        ? { url, active: true, trackingType: "DOM" } // Podrazumevane vrednosti
+        : url
+    );
+
+    res.json({ urls });
+  } catch (err) {
+    console.error("Error fetching URLs:", err);
+    res.status(500).json({ msg: "Failed to fetch URLs." });
+  }
+});
+
+app.post("/api/update-url", (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ msg: "No token provided." });
+
+  const token = authHeader.split(" ")[1];
+  let email;
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    email = decoded.email; // Koristi email iz tokena za identifikaciju korisnika
+  } catch (err) {
+    return res.status(401).json({ msg: "Invalid token." });
+  }
+
+  const { url, active, trackingType } = req.body;
+  if (!url || active === undefined || !trackingType) {
+    return res.status(400).json({ msg: "URL, active, and trackingType are required." });
+  }
+
+  // Učitaj korisnike iz users.json
+  const users = loadUsers();
+  const user = users.find((u) => u.email === email);
+
+  if (!user) {
+    return res.status(404).json({ msg: "User not found." });
+  }
+
+  // Ažuriraj stanje URL-a
+  const urlIndex = user.urls.findIndex((u) => u.url === url);
+  if (urlIndex === -1) {
+    return res.status(404).json({ msg: "URL not found." });
+  }
+
+  user.urls[urlIndex].active = active;
+  user.urls[urlIndex].trackingType = trackingType;
+
+  saveUsers(users); // Sačuvaj ažuriranu listu korisnika u users.json
+
+  res.json({ msg: "URL updated successfully." });
+});
+
 app.post("/api/fetch-content", async (req, res) => {
   const { url } = req.body;
 
@@ -147,28 +273,20 @@ app.post("/api/fetch-content", async (req, res) => {
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    // Dohvati cijeli HTML sadržaj
     const fullHtml = $.html();
+    const hash = crypto.createHash("sha256").update(fullHtml).digest("hex");
 
-    // Dohvati inline stilove i vanjske stilove
-    let styles = $("style").map((i, el) => $(el).html()).get().join('\n'); // inline stilovi
-    const externalStyles = $("link[rel='stylesheet']").map((i, el) => $(el).attr("href")).get();
-    
-    // Preuzmi vanjske stilove (ako je potrebno)
-    for (let styleUrl of externalStyles) {
-      const styleResponse = await fetch(styleUrl);
-      const styleText = await styleResponse.text();
-      styles += '\n' + styleText;
-    }
-
-    const htmlHash = crypto.createHash("sha256").update(fullHtml).digest("hex");
-    const stylesHash = crypto.createHash("sha256").update(styles).digest("hex");
+    // Parsiraj tekstualni sadržaj za upoređivanje
+    const content = [];
+    $("body *").each((_, el) => {
+      const text = $(el).text().trim();
+      if (text) content.push(text);
+    });
 
     res.json({
       html: fullHtml,
-      html_hash: htmlHash,
-      styles: styles,
-      styles_hash: stylesHash
+      hash: hash,
+      content: content
     });
 
   } catch (err) {
@@ -177,45 +295,64 @@ app.post("/api/fetch-content", async (req, res) => {
   }
 }); //testirana radi
 
-app.get("/api/logs", (req, res) => {
-  const auth = req.headers.authorization;
-  if (!auth) return res.status(401).json({ msg: "Unauthorized" });
+app.post("/api/add-log", (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ msg: "No token provided." });
 
-  const token = auth.split(" ")[1];
+  const token = authHeader.split(" ")[1];
+  let email;
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    email = decoded.email; // Koristi email iz tokena za identifikaciju korisnika
+  } catch (err) {
+    return res.status(401).json({ msg: "Invalid token." });
+  }
+
+  const { url, method, changes } = req.body;
+  if (!url || !method || !changes) {
+    return res.status(400).json({ msg: "URL, method, and changes are required." });
+  }
+
+  // Učitaj korisnike iz users.json
+  const users = loadUsers();
+  const user = users.find((u) => u.email === email);
+
+  if (!user) {
+    return res.status(404).json({ msg: "User not found." });
+  }
+
+  // Dodaj log u niz logova korisnika
+  const newLog = {
+    url,
+    method,
+    changes,
+    date: new Date().toISOString(),
+  };
+  user.logs.push(newLog);
+
+  saveUsers(users); // Sačuvaj ažuriranu listu korisnika u users.json
+
+  res.json({ msg: "Log added successfully." });
+});
+
+app.get("/api/logs", (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ msg: "No token provided." });
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const users = loadUsers();
     const user = users.find((u) => u.email === decoded.email);
-    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found." });
+    }
 
     res.json(user.logs || []);
   } catch (err) {
-    res.status(401).json({ msg: "Invalid token" });
-  }
-});
-
-app.post("/api/log", async (req, res) => {
-  const { email, url, method, changes } = req.body;
-
-  if (!email || !url || !method || !changes) {
-    return res.status(400).json({ msg: "Missing log data" });
-  }
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ msg: "User not found" });
-
-    user.logs.push({
-      url,
-      method,
-      changes,
-      date: new Date().toISOString(),
-    });
-
-    await user.save();
-    res.status(200).json({ msg: "Log saved" });
-  } catch (err) {
-    console.error("Error saving log:", err);
-    res.status(500).json({ msg: "Server error" });
+    console.error("Error fetching logs:", err);
+    res.status(500).json({ msg: "Failed to fetch logs." });
   }
 });
 

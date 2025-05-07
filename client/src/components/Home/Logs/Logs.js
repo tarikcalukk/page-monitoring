@@ -4,7 +4,8 @@ import "./Logs.css";
 function Logs() {
   const [logs, setLogs] = useState([]);
   const [error, setError] = useState(null);
-  const token = localStorage.getItem("token"); // Get the token from local storage
+  const [expandedLogs, setExpandedLogs] = useState({}); // Praćenje proširenih logova
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -17,52 +18,58 @@ function Logs() {
         const response = await fetch("http://localhost:5000/api/logs", {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          setError(`Failed to fetch logs: ${errorData.msg || response.statusText}`);
-          return;
+          throw new Error("Failed to fetch logs");
         }
 
         const data = await response.json();
         setLogs(data);
       } catch (err) {
-        console.error("Error fetching logs:", err);
-        setError("Failed to fetch logs: Network error");
+        setError(err.message || "Error fetching logs");
       }
     };
 
     fetchLogs();
-  }, [token]); // Re-fetch logs if the token changes (unlikely in this setup)
+  }, [token]);
+
+  // Funkcija za prebacivanje stanja proširenja loga
+  const toggleExpandLog = (index) => {
+    setExpandedLogs((prev) => ({
+      ...prev,
+      [index]: !prev[index], // Prebaci stanje za određeni log
+    }));
+  };
 
   return (
     <div className="logs-container">
-      <h2>Activity Logs</h2>
-      {error && <div className="error">{error}</div>}
-      {!error && logs.length === 0 && <p>No activity logs yet.</p>}
-      {!error && logs.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>Timestamp</th>
-              <th>URL</th>
-              <th>Change Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map((log, index) => (
-              <tr key={index}>
-                <td>{new Date(log.timestamp).toLocaleString()}</td>
-                <td>{log.url}</td>
-                <td>{log.changeText}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <h2>Logs</h2>
+      {error && <p className="error">{error}</p>}
+      {logs.length === 0 && !error && <p>No logs found.</p>}
+      <ul className="logs-list">
+        {logs.map((log, index) => (
+          <li key={index} className="log-entry">
+            <p><strong>URL:</strong> {log.url}</p>
+            <p><strong>Method:</strong> {log.method}</p>
+            <p><strong>Date:</strong> {new Date(log.date).toLocaleString()}</p>
+            <button
+              className="toggle-button"
+              onClick={() => toggleExpandLog(index)}
+            >
+              {expandedLogs[index] ? "Hide Changes" : "Show Changes"}
+            </button>
+            {expandedLogs[index] && ( // Prikaži promene samo ako je log proširen
+              <div className="log-changes">
+                <p><strong>Changes:</strong></p>
+                <pre>{JSON.stringify(log.changes, null, 2)}</pre>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
