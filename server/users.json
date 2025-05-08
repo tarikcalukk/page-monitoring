@@ -1,10 +1,11 @@
 [
   {
     "email": "tarik@gmail.com",
-    "password": "$2b$10$QfP3gUaBGOc4r4FLRhSRZ.tFZ9J1TvcKWHEV2CoRfZJYSaBkS9c0y",
-    "urls": [
-      "https://www.timeanddate.com/worldclock/"
-    ],
-    "logs": []
+    "password": "$2b$10$S60kKTEGET5vIvF0zc93NeG7aYis2fp.Z2rb1JPRUF8F28M3sXh5u",
+    "urls": [],
+    "logs": [],
+    "changes": {
+      "https://www.timeanddate.com/worldclock/": 0
+    }
   }
 ]

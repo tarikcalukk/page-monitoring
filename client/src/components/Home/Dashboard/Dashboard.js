@@ -1,14 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./Dashboard.css";
 
 function Dashboard() {
   const [urls, setUrls] = useState([]); // State za URL-ove
   const [newUrl, setNewUrl] = useState(""); // State za unos novog URL-a
   const [isValidating, setIsValidating] = useState(false); // State za validaciju
-  const monitoringRefs = useRef({});
-  const hashRefs = useRef({});
-  const hashContentRefs = useRef({});
-
   const userToken = localStorage.getItem("token");
 
   // Funkcija za dohvaćanje URL-ova sa servera
@@ -21,11 +17,11 @@ function Dashboard() {
           Authorization: `Bearer ${userToken}`,
         },
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to fetch URLs");
       }
-  
+
       const data = await response.json();
       setUrls(data.urls || []); // Postavi URL-ove sa stanjima iz backend-a
     } catch (err) {
@@ -38,6 +34,7 @@ function Dashboard() {
     fetchUrls();
   }, [fetchUrls]);
 
+  // Dodavanje novog URL-a
   const handleAddUrl = async () => {
     if (!newUrl.trim()) {
       alert("URL cannot be empty.");
@@ -50,7 +47,25 @@ function Dashboard() {
     }
 
     setIsValidating(true);
+
+    // Validacija URL-a
     try {
+      const validateResponse = await fetch("http://localhost:5000/api/validate-url", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url: newUrl }),
+      });
+
+      if (!validateResponse.ok) {
+        const validateData = await validateResponse.json();
+        alert(`Validation failed: ${validateData.msg}`);
+        setIsValidating(false);
+        return;
+      }
+
+      // Dodavanje URL-a nakon validacije
       const saveResponse = await fetch("http://localhost:5000/api/save-url", {
         method: "POST",
         headers: {
@@ -60,14 +75,11 @@ function Dashboard() {
         body: JSON.stringify({ url: newUrl }),
       });
 
-      const saveData = await saveResponse.json();
       if (!saveResponse.ok) {
-        console.error("Failed to save URL:", saveData.msg);
-        return;
+        throw new Error("Failed to save URL");
       }
 
-      // Dodaj novi URL u stanje
-      setUrls([...urls, { url: newUrl, active: true, trackingType: "DOM" }]);
+      setUrls([...urls, { url: newUrl, active: true, trackingType: "DOM", changeCount: 0 }]); // Dodaj novi URL u stanje
       setNewUrl("");
     } catch (err) {
       console.error("Error saving URL:", err);
@@ -75,113 +87,82 @@ function Dashboard() {
     setIsValidating(false);
   };
 
-  const toggleUrlStatus = (index) => {
-    const updatedUrls = [...urls];
-    updatedUrls[index].active = !updatedUrls[index].active;
+  // Brisanje URL-a
+  const handleRemoveUrl = async (index) => {
+    const urlToRemove = urls[index].url;
+
+    const updatedUrls = urls.filter((_, i) => i !== index);
     setUrls(updatedUrls);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/delete-url", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+        body: JSON.stringify({ url: urlToRemove }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete URL");
+      }
+    } catch (err) {
+      console.error("Error deleting URL:", err);
+    }
   };
 
+  // Promena tipa praćenja
   const changeTrackingType = (index, type) => {
     const updatedUrls = [...urls];
     updatedUrls[index].trackingType = type;
     setUrls(updatedUrls);
   };
 
-  const handleRemoveUrl = (index) => {
-    const updatedUrls = urls.filter((_, i) => i !== index);
-    setUrls(updatedUrls);
-  };
-
+  // Monitoring promena na URL-ovima
   useEffect(() => {
     const intervals = [];
-  
-    urls.forEach((entry) => {
+
+    urls.forEach((entry, index) => {
       if (!entry.active) return;
-  
+
+      let previousHash = null;
+
       const interval = setInterval(async () => {
         try {
           const response = await fetch("http://localhost:5000/api/fetch-content", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+            },
             body: JSON.stringify({ url: entry.url }),
           });
-  
+
+          if (!response.ok) {
+            console.error(`Failed to fetch content for ${entry.url}`);
+            return;
+          }
+
           const data = await response.json();
-          if (!response.ok) return;
-  
-          if (entry.trackingType === "DOM") {
-            const newContent = data.content;
-            const oldContent = monitoringRefs.current[entry.url] || [];
-            const added = newContent.filter((item) => !oldContent.includes(item));
-            const removed = oldContent.filter((item) => !newContent.includes(item));
-  
-            if (added.length || removed.length) {
-              let message = `Detected changes (DOM) on ${entry.url}:\n`;
-              if (added.length) message += `\n➕ New:\n- ` + added.slice(0, 3).join("\n- ");
-              if (removed.length) message += `\n\n➖ Removed:\n- ` + removed.slice(0, 3).join("\n- ");
-              alert(message);
-  
-              // Pošalji log na backend
-              await fetch("http://localhost:5000/api/add-log", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${userToken}`,
-                },
-                body: JSON.stringify({
-                  url: entry.url,
-                  method: "DOM",
-                  changes: { added, removed },
-                }),
-              });
-            }
-  
-            monitoringRefs.current[entry.url] = newContent;
+
+          if (previousHash && previousHash !== data.hash) {
+            alert(`Change detected on ${entry.url}`);
+            const updatedUrls = [...urls];
+            updatedUrls[index].changeCount = (updatedUrls[index].changeCount || 0) + 1;
+            setUrls(updatedUrls);
           }
-  
-          if (entry.trackingType === "HASH") {
-            const newHash = data.hash;
-            const newContent = data.content;
-            const oldHash = hashRefs.current[entry.url];
-            const oldContent = hashContentRefs.current[entry.url] || [];
-  
-            if (oldHash && oldHash !== newHash) {
-              const added = newContent.filter((item) => !oldContent.includes(item));
-              const removed = oldContent.filter((item) => !newContent.includes(item));
-  
-              let message = `Detected changes (HASH) on ${entry.url}:\n`;
-              if (added.length) message += `\n➕ New content:\n- ` + added.slice(0, 3).join("\n- ");
-              if (removed.length) message += `\n\n➖ Removed content:\n- ` + removed.slice(0, 3).join("\n- ");
-              alert(message);
-  
-              // Pošalji log na backend
-              await fetch("http://localhost:5000/api/add-log", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${userToken}`,
-                },
-                body: JSON.stringify({
-                  url: entry.url,
-                  method: "HASH",
-                  changes: { added, removed },
-                }),
-              });
-            }
-  
-            hashRefs.current[entry.url] = newHash;
-            hashContentRefs.current[entry.url] = newContent;
-          }
+
+          previousHash = data.hash;
         } catch (err) {
-          console.error("Monitoring error:", err);
+          console.error(`Error monitoring ${entry.url}:`, err);
         }
-      }, 5000);
-  
+      }, 1000); // Provjerava svake sekunde
+
       intervals.push(interval);
     });
-  
+
     return () => intervals.forEach(clearInterval);
-  }, [urls, userToken]);
+  }, [urls]);
 
   return (
     <div className="dashboard-container">
@@ -209,6 +190,7 @@ function Dashboard() {
               <tr>
                 <th>URL</th>
                 <th>Status</th>
+                <th>Changes</th>
                 <th>Tracking Type</th>
                 <th>Actions</th>
               </tr>
@@ -220,11 +202,16 @@ function Dashboard() {
                   <td>
                     <button
                       className={url.active ? "active" : "inactive"}
-                      onClick={() => toggleUrlStatus(index)}
+                      onClick={() => {
+                        const updatedUrls = [...urls];
+                        updatedUrls[index].active = !updatedUrls[index].active;
+                        setUrls(updatedUrls);
+                      }}
                     >
                       {url.active ? "Active" : "Inactive"}
                     </button>
                   </td>
+                  <td>{url.changeCount || 0} changes</td>
                   <td>
                     <select
                       value={url.trackingType}

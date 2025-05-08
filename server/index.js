@@ -8,12 +8,13 @@ const crypto = require("crypto");
 const fetch = require("node-fetch"); 
 const fs = require("fs");
 const path = require("path");
+require("dotenv").config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const JWT_SECRET = "secret123";
+const JWT_SECRET = process.env.JWT_SECRET;
 const USERS_FILE = path.join(__dirname, "users.json");
 
 function loadUsers() {
@@ -25,6 +26,28 @@ function loadUsers() {
 }
 function saveUsers(data) {
   fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2));
+}
+
+function authorizeUser(req) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    throw { status: 401, msg: "No token provided." };
+  }
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const users = loadUsers();
+    const user = users.find((u) => u.email === decoded.email);
+
+    if (!user) {
+      throw { status: 404, msg: "User not found." };
+    }
+
+    return user;
+  } catch (err) {
+    throw { status: 401, msg: "Invalid token." };
+  }
 }
 
 let users = loadUsers();
@@ -45,7 +68,6 @@ app.post("/api/register", async (req, res) => {
     return res.status(400).json({ msg: "Password must be at least 8 characters long" });
   }
 
-  // Check if user already exists
   const existing = users.find((u) => u.email === email);
   if (existing) {
     return res.status(400).json({ msg: "User already exists" });
@@ -62,7 +84,7 @@ app.post("/api/register", async (req, res) => {
     console.error(err);
     res.status(500).json({ msg: "Server error" });
   }
-}); //testirana radi
+}); //radi
 
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
@@ -75,7 +97,7 @@ app.post("/api/login", async (req, res) => {
 
   const token = jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: "1h" });
   res.json({ token });
-}); // testirana radi
+}); // radi
 
 app.get('/api/verify', (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -91,7 +113,7 @@ app.get('/api/verify', (req, res) => {
 
     res.json({ isValid: true, user: decoded }); 
   });
-}); //testirana radi
+}); //radi
 
 app.post("/api/change-password", async (req, res) => {
   const auth = req.headers.authorization;
@@ -112,7 +134,7 @@ app.post("/api/change-password", async (req, res) => {
   } catch (err) {
     res.status(401).json({ msg: "Invalid token" });
   }
-}); //testirana radi
+}); //radi
 
 app.delete("/api/delete-account", (req, res) => {
   const auth = req.headers.authorization;
@@ -126,7 +148,6 @@ app.delete("/api/delete-account", (req, res) => {
 
     if (userIndex === -1) return res.status(404).json({ msg: "User not found" });
 
-    // Ukloni korisnika iz liste
     usersList.splice(userIndex, 1);
 
     users = usersList;
@@ -137,7 +158,7 @@ app.delete("/api/delete-account", (req, res) => {
     console.error("Error deleting account:", err);
     res.status(401).json({ msg: "Invalid token" });
   }
-}); //testirana radi
+}); // radi
 
 app.post("/api/validate-url", (req, res) => {
   const { url } = req.body;
@@ -163,107 +184,48 @@ app.post("/api/validate-url", (req, res) => {
   } catch (error) {
     res.status(500).json({ msg: "The URL is unreachable or invalid." });
   }
-}); //testirana radi
+}); //radi
 
 
 app.post("/api/save-url", (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ msg: "No token provided." });
-
-  const token = authHeader.split(" ")[1];
-  let email;
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    email = decoded.email;
-  } catch (err) {
-    return res.status(401).json({ msg: "Invalid token." });
-  }
+    const user = authorizeUser(req);
+    const { url } = req.body;
 
-  const { url } = req.body;
-  if (!url) return res.status(400).json({ msg: "URL is required." });
+    if (!url) return res.status(400).json({ msg: "URL is required." });
 
-  const users = loadUsers();
-  const user = users.find((u) => u.email === email);
-
-  if (!user) {
-    return res.status(404).json({ msg: "User not found." });
-  }
-
-  if (!user.urls.includes(url)) {
-    user.urls.push(url);
-    saveUsers(users);
-  }
-
-  res.json({ msg: "URL saved successfully." });
-});
-
-app.get("/api/get-urls", (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ msg: "No token provided." });
-
-  const token = authHeader.split(" ")[1];
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const users = loadUsers();
-    const user = users.find((u) => u.email === decoded.email);
-
-    if (!user) {
-      return res.status(404).json({ msg: "User not found." });
+    if (!user.urls.includes(url)) {
+      user.urls.push(url);
     }
 
-    // Transformacija URL-ova u objekte ako su stringovi
+    const users = loadUsers();
+    const updatedUsers = users.map((u) =>
+      u.email === user.email ? user : u
+    );
+    saveUsers(updatedUsers);
+
+    res.json({ msg: "URL saved successfully." });
+  } catch (err) {
+    console.error("Error saving URL:", err);
+    res.status(err.status || 500).json({ msg: err.msg || "Server error." });
+  }
+}); //radi
+
+app.get("/api/get-urls", (req, res) => {
+  try {
+    const user = authorizeUser(req);
+
     const urls = user.urls.map((url) =>
       typeof url === "string"
-        ? { url, active: true, trackingType: "DOM" } // Podrazumevane vrednosti
+        ? { url, active: true, trackingType: "DOM" }
         : url
     );
 
     res.json({ urls });
   } catch (err) {
-    console.error("Error fetching URLs:", err);
-    res.status(500).json({ msg: "Failed to fetch URLs." });
+    res.status(err.status || 500).json({ msg: err.msg || "Server error." });
   }
-});
-
-app.post("/api/update-url", (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ msg: "No token provided." });
-
-  const token = authHeader.split(" ")[1];
-  let email;
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    email = decoded.email; // Koristi email iz tokena za identifikaciju korisnika
-  } catch (err) {
-    return res.status(401).json({ msg: "Invalid token." });
-  }
-
-  const { url, active, trackingType } = req.body;
-  if (!url || active === undefined || !trackingType) {
-    return res.status(400).json({ msg: "URL, active, and trackingType are required." });
-  }
-
-  // Učitaj korisnike iz users.json
-  const users = loadUsers();
-  const user = users.find((u) => u.email === email);
-
-  if (!user) {
-    return res.status(404).json({ msg: "User not found." });
-  }
-
-  // Ažuriraj stanje URL-a
-  const urlIndex = user.urls.findIndex((u) => u.url === url);
-  if (urlIndex === -1) {
-    return res.status(404).json({ msg: "URL not found." });
-  }
-
-  user.urls[urlIndex].active = active;
-  user.urls[urlIndex].trackingType = trackingType;
-
-  saveUsers(users); // Sačuvaj ažuriranu listu korisnika u users.json
-
-  res.json({ msg: "URL updated successfully." });
-});
+}); //radi
 
 app.post("/api/fetch-content", async (req, res) => {
   const { url } = req.body;
@@ -276,83 +238,121 @@ app.post("/api/fetch-content", async (req, res) => {
     const fullHtml = $.html();
     const hash = crypto.createHash("sha256").update(fullHtml).digest("hex");
 
-    // Parsiraj tekstualni sadržaj za upoređivanje
-    const content = [];
-    $("body *").each((_, el) => {
-      const text = $(el).text().trim();
-      if (text) content.push(text);
-    });
-
     res.json({
-      html: fullHtml,
-      hash: hash,
-      content: content
+      hash: hash
     });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Failed to fetch page content." });
   }
-}); //testirana radi
+}); //radi
 
 app.post("/api/add-log", (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ msg: "No token provided." });
-
-  const token = authHeader.split(" ")[1];
-  let email;
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    email = decoded.email; // Koristi email iz tokena za identifikaciju korisnika
+    const user = authorizeUser(req);
+    const { url } = req.body;
+
+    if (!url) return res.status(400).json({ msg: "URL is required." });
+
+    const newLog = {
+      url,
+      message: "Change detected",
+      date: new Date().toISOString(),
+    };
+    user.logs.push(newLog);
+
+    const users = loadUsers();
+
+    const updatedUsers = users.map((u) =>
+      u.email === user.email ? user : u
+    );
+
+    saveUsers(updatedUsers);
+
+    res.json({ msg: "Log added successfully." });
   } catch (err) {
-    return res.status(401).json({ msg: "Invalid token." });
+    console.error("Error adding log:", err);
+    res.status(err.status || 500).json({ msg: err.msg || "Server error." });
   }
-
-  const { url, method, changes } = req.body;
-  if (!url || !method || !changes) {
-    return res.status(400).json({ msg: "URL, method, and changes are required." });
-  }
-
-  // Učitaj korisnike iz users.json
-  const users = loadUsers();
-  const user = users.find((u) => u.email === email);
-
-  if (!user) {
-    return res.status(404).json({ msg: "User not found." });
-  }
-
-  // Dodaj log u niz logova korisnika
-  const newLog = {
-    url,
-    method,
-    changes,
-    date: new Date().toISOString(),
-  };
-  user.logs.push(newLog);
-
-  saveUsers(users); // Sačuvaj ažuriranu listu korisnika u users.json
-
-  res.json({ msg: "Log added successfully." });
-});
+}); //radi
 
 app.get("/api/logs", (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ msg: "No token provided." });
-
-  const token = authHeader.split(" ")[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const users = loadUsers();
-    const user = users.find((u) => u.email === decoded.email);
-
-    if (!user) {
-      return res.status(404).json({ msg: "User not found." });
-    }
-
+    const user = authorizeUser(req);
     res.json(user.logs || []);
   } catch (err) {
-    console.error("Error fetching logs:", err);
-    res.status(500).json({ msg: "Failed to fetch logs." });
+    res.status(err.status || 500).json({ msg: err.msg || "Server error." });
+  }
+}); //radi
+
+app.delete("/api/delete-url", (req, res) => {
+  try {
+    const user = authorizeUser(req);
+    const { url } = req.body;
+
+    if (!url) return res.status(400).json({ msg: "URL is required." });
+
+    user.urls = user.urls.filter((u) => u !== url);
+
+    const users = loadUsers();
+
+    const updatedUsers = users.map((u) =>
+      u.email === user.email ? user : u
+    );
+
+    saveUsers(updatedUsers);
+
+    res.json({ msg: "URL deleted successfully." });
+  } catch (err) {
+    console.error("Error deleting URL:", err);
+    res.status(err.status || 500).json({ msg: err.msg || "Server error." });
+  }
+}); //radi
+
+app.get("/api/get-changes", (req, res) => {
+  try {
+    const user = authorizeUser(req);
+    const { url } = req.query;
+
+    if (!url) return res.status(400).json({ msg: "URL is required." });
+
+    const changeCount = user.changes?.[url] || 0;
+
+    res.json({ changes: changeCount });
+  } catch (err) {
+    console.error("Error fetching changes:", err);
+    res.status(err.status || 500).json({ msg: err.msg || "Server error." });
+  }
+});
+
+app.post("/api/increment-changes", (req, res) => {
+  try {
+    const user = authorizeUser(req);
+    const { url } = req.body;
+
+    if (!url) return res.status(400).json({ msg: "URL is required." });
+
+    if (!user.urls.includes(url)) {
+      return res.status(404).json({ msg: "URL not found." });
+    }
+
+    if (!user.changes) {
+      user.changes = {};
+    }
+
+    user.changes[url] = (user.changes[url] || 0) + 1;
+
+    const users = loadUsers();
+    const updatedUsers = users.map((u) =>
+      u.email === user.email ? user : u
+    );
+
+    saveUsers(updatedUsers);
+
+    res.json({ msg: "Change count incremented successfully.", changes: user.changes[url] });
+  } catch (err) {
+    console.error("Error incrementing changes:", err);
+    res.status(err.status || 500).json({ msg: err.msg || "Server error." });
   }
 });
 

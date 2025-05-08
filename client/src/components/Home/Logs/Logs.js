@@ -2,23 +2,18 @@ import React, { useEffect, useState } from "react";
 import "./Logs.css";
 
 function Logs() {
-  const [logs, setLogs] = useState([]);
-  const [error, setError] = useState(null);
-  const [expandedLogs, setExpandedLogs] = useState({}); // Praćenje proširenih logova
-  const token = localStorage.getItem("token");
+  const [logs, setLogs] = useState([]); // State za logove
+  const userToken = localStorage.getItem("token");
 
+  // Dohvatanje logova sa servera
   useEffect(() => {
     const fetchLogs = async () => {
-      if (!token) {
-        setError("Unauthorized: No token found");
-        return;
-      }
-
       try {
         const response = await fetch("http://localhost:5000/api/logs", {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userToken}`,
           },
         });
 
@@ -27,49 +22,40 @@ function Logs() {
         }
 
         const data = await response.json();
-        setLogs(data);
+        setLogs(data || []);
       } catch (err) {
-        setError(err.message || "Error fetching logs");
+        console.error("Error fetching logs:", err);
       }
     };
 
     fetchLogs();
-  }, [token]);
-
-  // Funkcija za prebacivanje stanja proširenja loga
-  const toggleExpandLog = (index) => {
-    setExpandedLogs((prev) => ({
-      ...prev,
-      [index]: !prev[index], // Prebaci stanje za određeni log
-    }));
-  };
+  }, [userToken]);
 
   return (
     <div className="logs-container">
-      <h2>Logs</h2>
-      {error && <p className="error">{error}</p>}
-      {logs.length === 0 && !error && <p>No logs found.</p>}
-      <ul className="logs-list">
-        {logs.map((log, index) => (
-          <li key={index} className="log-entry">
-            <p><strong>URL:</strong> {log.url}</p>
-            <p><strong>Method:</strong> {log.method}</p>
-            <p><strong>Date:</strong> {new Date(log.date).toLocaleString()}</p>
-            <button
-              className="toggle-button"
-              onClick={() => toggleExpandLog(index)}
-            >
-              {expandedLogs[index] ? "Hide Changes" : "Show Changes"}
-            </button>
-            {expandedLogs[index] && ( // Prikaži promene samo ako je log proširen
-              <div className="log-changes">
-                <p><strong>Changes:</strong></p>
-                <pre>{JSON.stringify(log.changes, null, 2)}</pre>
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
+      <h2>Change Logs</h2>
+      {logs.length === 0 ? (
+        <p>No logs available.</p>
+      ) : (
+        <table className="logs-table">
+          <thead>
+            <tr>
+              <th>URL</th>
+              <th>Message</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {logs.map((log, index) => (
+              <tr key={index}>
+                <td>{log.url}</td>
+                <td>{log.message}</td>
+                <td>{new Date(log.date).toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
