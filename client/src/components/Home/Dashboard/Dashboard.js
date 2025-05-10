@@ -2,12 +2,11 @@ import React, { useState, useEffect, useCallback } from "react";
 import "./Dashboard.css";
 
 function Dashboard() {
-  const [urls, setUrls] = useState([]); // State za URL-ove
-  const [newUrl, setNewUrl] = useState(""); // State za unos novog URL-a
-  const [isValidating, setIsValidating] = useState(false); // State za validaciju
+  const [urls, setUrls] = useState([]);
+  const [newUrl, setNewUrl] = useState("");
+  const [isValidating, setIsValidating] = useState(false);
   const userToken = localStorage.getItem("token");
 
-  // Funkcija za dohvaćanje URL-ova sa servera
   const fetchUrls = useCallback(async () => {
     try {
       const response = await fetch("http://localhost:5000/api/get-urls", {
@@ -23,18 +22,42 @@ function Dashboard() {
       }
 
       const data = await response.json();
-      setUrls(data.urls || []); // Postavi URL-ove sa stanjima iz backend-a
+      const urlsWithCounts = await Promise.all(
+        (data.urls || []).map(async (urlObj) => {
+          try {
+            const changesRes = await fetch(
+              `http://localhost:5000/api/get-changes?url=${encodeURIComponent(urlObj.url)}`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${userToken}`,
+                },
+              }
+            );
+            const changesData = await changesRes.json();
+            return {
+              ...urlObj,
+              changes: typeof changesData.changes === "number" ? changesData.changes : 0,
+            };
+          } catch {
+            return {
+              ...urlObj,
+              changes: 0,
+            };
+          }
+        })
+      );
+      setUrls(urlsWithCounts);
     } catch (err) {
       console.error("Error fetching URLs:", err);
     }
   }, [userToken]);
 
-  // Učitaj URL-ove kada se komponenta učita
   useEffect(() => {
     fetchUrls();
   }, [fetchUrls]);
 
-  // Dodavanje novog URL-a
   const handleAddUrl = async () => {
     if (!newUrl.trim()) {
       alert("URL cannot be empty.");
@@ -48,7 +71,6 @@ function Dashboard() {
 
     setIsValidating(true);
 
-    // Validacija URL-a
     try {
       const validateResponse = await fetch("http://localhost:5000/api/validate-url", {
         method: "POST",
@@ -65,7 +87,6 @@ function Dashboard() {
         return;
       }
 
-      // Dodavanje URL-a nakon validacije
       const saveResponse = await fetch("http://localhost:5000/api/save-url", {
         method: "POST",
         headers: {
@@ -79,7 +100,7 @@ function Dashboard() {
         throw new Error("Failed to save URL");
       }
 
-      setUrls([...urls, { url: newUrl, active: true, trackingType: "DOM", changeCount: 0 }]); // Dodaj novi URL u stanje
+      setUrls([...urls, { url: newUrl, active: true, changes: 0 }]);
       setNewUrl("");
     } catch (err) {
       console.error("Error saving URL:", err);
@@ -87,7 +108,6 @@ function Dashboard() {
     setIsValidating(false);
   };
 
-  // Brisanje URL-a
   const handleRemoveUrl = async (index) => {
     const urlToRemove = urls[index].url;
 
@@ -112,14 +132,26 @@ function Dashboard() {
     }
   };
 
-  // Promena tipa praćenja
-  const changeTrackingType = (index, type) => {
-    const updatedUrls = [...urls];
-    updatedUrls[index].trackingType = type;
-    setUrls(updatedUrls);
-  };
+  const incrementChangeCount = useCallback(async (url, index) => {
+    try {
+      const response = await fetch("http://localhost:5000/api/increment-changes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+        body: JSON.stringify({ url }),
+      });
+      if (!response.ok) throw new Error("Failed to increment changes");
+      const data = await response.json();
+      const updatedUrls = [...urls];
+      updatedUrls[index].changes = data.changes || 0;
+      setUrls(updatedUrls);
+    } catch (err) {
+      console.error("Error incrementing changes:", err);
+    }
+  }, [urls, userToken]);
 
-  // Monitoring promena na URL-ovima
   useEffect(() => {
     const intervals = [];
 
@@ -147,22 +179,20 @@ function Dashboard() {
 
           if (previousHash && previousHash !== data.hash) {
             alert(`Change detected on ${entry.url}`);
-            const updatedUrls = [...urls];
-            updatedUrls[index].changeCount = (updatedUrls[index].changeCount || 0) + 1;
-            setUrls(updatedUrls);
+            await incrementChangeCount(entry.url, index);
           }
 
           previousHash = data.hash;
         } catch (err) {
           console.error(`Error monitoring ${entry.url}:`, err);
         }
-      }, 1000); // Provjerava svake sekunde
+      }, 1000);
 
       intervals.push(interval);
     });
 
     return () => intervals.forEach(clearInterval);
-  }, [urls]);
+  }, [urls, incrementChangeCount]);
 
   return (
     <div className="dashboard-container">
@@ -191,7 +221,6 @@ function Dashboard() {
                 <th>URL</th>
                 <th>Status</th>
                 <th>Changes</th>
-                <th>Tracking Type</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -211,16 +240,7 @@ function Dashboard() {
                       {url.active ? "Active" : "Inactive"}
                     </button>
                   </td>
-                  <td>{url.changeCount || 0} changes</td>
-                  <td>
-                    <select
-                      value={url.trackingType}
-                      onChange={(e) => changeTrackingType(index, e.target.value)}
-                    >
-                      <option value="DOM">DOM</option>
-                      <option value="HASH">HASH</option>
-                    </select>
-                  </td>
+                  <td>{url.changes || 0} changes</td>
                   <td>
                     <button className="remove" onClick={() => handleRemoveUrl(index)}>
                       Remove

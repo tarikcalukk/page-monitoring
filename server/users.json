@@ -1,11 +1,14 @@
 [
   {
     "email": "tarik@gmail.com",
-    "password": "$2b$10$S60kKTEGET5vIvF0zc93NeG7aYis2fp.Z2rb1JPRUF8F28M3sXh5u",
-    "urls": [],
-    "logs": [],
-    "changes": {
-      "https://www.timeanddate.com/worldclock/": 0
-    }
+    "password": "$2b$10$P3abEoG1poRzQGnv00SUf.667BLoDJTvoWGnsIluwTQ5rPNs.qk6i",
+    "urls": [
+      {
+        "url": "https://www.timeanddate.com/worldclock/",
+        "active": true,
+        "changes": 21,
+        "time": "2025-05-10T13:47:32.695Z"
+      }
+    ]
   }
 ]

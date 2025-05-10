@@ -76,7 +76,7 @@ app.post("/api/register", async (req, res) => {
   try {
     const hashed = await bcrypt.hash(password, 10);
 
-    users.push({ email, password: hashed, urls: [], logs: [] });
+    users.push({ email, password: hashed, urls: [] });
     saveUsers(users);
 
     res.status(201).json({ msg: "User registered successfully" });
@@ -194,14 +194,18 @@ app.post("/api/save-url", (req, res) => {
 
     if (!url) return res.status(400).json({ msg: "URL is required." });
 
-    if (!user.urls.includes(url)) {
-      user.urls.push(url);
+    const alreadyExists = user.urls.some((u) => u.url === url);
+    if (!alreadyExists) {
+      user.urls.push({
+        url,
+        active: true,
+        changes: 0,
+        time: new Date().toISOString(),
+      });
     }
 
     const users = loadUsers();
-    const updatedUsers = users.map((u) =>
-      u.email === user.email ? user : u
-    );
+    const updatedUsers = users.map((u) => (u.email === user.email ? user : u));
     saveUsers(updatedUsers);
 
     res.json({ msg: "URL saved successfully." });
@@ -292,14 +296,10 @@ app.delete("/api/delete-url", (req, res) => {
 
     if (!url) return res.status(400).json({ msg: "URL is required." });
 
-    user.urls = user.urls.filter((u) => u !== url);
+    user.urls = user.urls.filter((u) => u.url !== url);
 
     const users = loadUsers();
-
-    const updatedUsers = users.map((u) =>
-      u.email === user.email ? user : u
-    );
-
+    const updatedUsers = users.map((u) => (u.email === user.email ? user : u));
     saveUsers(updatedUsers);
 
     res.json({ msg: "URL deleted successfully." });
@@ -316,14 +316,15 @@ app.get("/api/get-changes", (req, res) => {
 
     if (!url) return res.status(400).json({ msg: "URL is required." });
 
-    const changeCount = user.changes?.[url] || 0;
+    const urlObj = user.urls.find((u) => u.url === url);
+    const changeCount = urlObj ? urlObj.changes : 0;
 
     res.json({ changes: changeCount });
   } catch (err) {
     console.error("Error fetching changes:", err);
     res.status(err.status || 500).json({ msg: err.msg || "Server error." });
   }
-});
+}); //radi
 
 app.post("/api/increment-changes", (req, res) => {
   try {
@@ -332,28 +333,23 @@ app.post("/api/increment-changes", (req, res) => {
 
     if (!url) return res.status(400).json({ msg: "URL is required." });
 
-    if (!user.urls.includes(url)) {
+    const urlObj = user.urls.find((u) => u.url === url);
+    if (!urlObj) {
       return res.status(404).json({ msg: "URL not found." });
     }
 
-    if (!user.changes) {
-      user.changes = {};
-    }
-
-    user.changes[url] = (user.changes[url] || 0) + 1;
+    urlObj.changes = (urlObj.changes || 0) + 1;
+    urlObj.time = new Date().toISOString();
 
     const users = loadUsers();
-    const updatedUsers = users.map((u) =>
-      u.email === user.email ? user : u
-    );
-
+    const updatedUsers = users.map((u) => (u.email === user.email ? user : u));
     saveUsers(updatedUsers);
 
-    res.json({ msg: "Change count incremented successfully.", changes: user.changes[url] });
+    res.json({ msg: "Change count incremented successfully.", changes: urlObj.changes });
   } catch (err) {
     console.error("Error incrementing changes:", err);
     res.status(err.status || 500).json({ msg: err.msg || "Server error." });
   }
-});
+}); //radi
 
 app.listen(5000, () => console.log("Server running on http://localhost:5000"));
