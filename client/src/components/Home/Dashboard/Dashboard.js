@@ -17,38 +17,10 @@ function Dashboard() {
         },
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch URLs");
-      }
+      if (!response.ok) throw new Error("Failed to fetch URLs");
 
       const data = await response.json();
-      const urlsWithCounts = await Promise.all(
-        (data.urls || []).map(async (urlObj) => {
-          try {
-            const changesRes = await fetch(
-              `http://localhost:5000/api/get-changes?url=${encodeURIComponent(urlObj.url)}`,
-              {
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${userToken}`,
-                },
-              }
-            );
-            const changesData = await changesRes.json();
-            return {
-              ...urlObj,
-              changes: typeof changesData.changes === "number" ? changesData.changes : 0,
-            };
-          } catch {
-            return {
-              ...urlObj,
-              changes: 0,
-            };
-          }
-        })
-      );
-      setUrls(urlsWithCounts);
+      setUrls(data);
     } catch (err) {
       console.error("Error fetching URLs:", err);
     }
@@ -63,20 +35,16 @@ function Dashboard() {
       alert("URL cannot be empty.");
       return;
     }
-
     if (urls.some((url) => url.url === newUrl)) {
       alert("This URL is already being tracked.");
       return;
     }
-
     setIsValidating(true);
 
     try {
       const validateResponse = await fetch("http://localhost:5000/api/validate-url", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: newUrl }),
       });
 
@@ -93,15 +61,13 @@ function Dashboard() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${userToken}`,
         },
-        body: JSON.stringify({ url: newUrl }),
+        body: JSON.stringify({ url: newUrl, method: "HASH" }),
       });
 
-      if (!saveResponse.ok) {
-        throw new Error("Failed to save URL");
-      }
+      if (!saveResponse.ok) throw new Error("Failed to save URL");
 
-      setUrls([...urls, { url: newUrl, active: true, changes: 0 }]);
       setNewUrl("");
+      fetchUrls();
     } catch (err) {
       console.error("Error saving URL:", err);
     }
@@ -110,10 +76,6 @@ function Dashboard() {
 
   const handleRemoveUrl = async (index) => {
     const urlToRemove = urls[index].url;
-
-    const updatedUrls = urls.filter((_, i) => i !== index);
-    setUrls(updatedUrls);
-
     try {
       const response = await fetch("http://localhost:5000/api/delete-url", {
         method: "DELETE",
@@ -123,76 +85,30 @@ function Dashboard() {
         },
         body: JSON.stringify({ url: urlToRemove }),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete URL");
-      }
+      if (!response.ok) throw new Error("Failed to delete URL");
+      fetchUrls();
     } catch (err) {
       console.error("Error deleting URL:", err);
     }
   };
 
-  const incrementChangeCount = useCallback(async (url, index) => {
+  const handleToggleActive = async (index) => {
+    const urlObj = urls[index];
     try {
-      const response = await fetch("http://localhost:5000/api/increment-changes", {
+      const response = await fetch("http://localhost:5000/api/toggle-url-active", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${userToken}`,
         },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: urlObj.url, active: !urlObj.active }),
       });
-      if (!response.ok) throw new Error("Failed to increment changes");
-      const data = await response.json();
-      const updatedUrls = [...urls];
-      updatedUrls[index].changes = data.changes || 0;
-      setUrls(updatedUrls);
+      if (!response.ok) throw new Error("Failed to toggle active status");
+      fetchUrls();
     } catch (err) {
-      console.error("Error incrementing changes:", err);
+      console.error("Error toggling active status:", err);
     }
-  }, [urls, userToken]);
-
-  useEffect(() => {
-    const intervals = [];
-
-    urls.forEach((entry, index) => {
-      if (!entry.active) return;
-
-      let previousHash = null;
-
-      const interval = setInterval(async () => {
-        try {
-          const response = await fetch("http://localhost:5000/api/fetch-content", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ url: entry.url }),
-          });
-
-          if (!response.ok) {
-            console.error(`Failed to fetch content for ${entry.url}`);
-            return;
-          }
-
-          const data = await response.json();
-
-          if (previousHash && previousHash !== data.hash) {
-            alert(`Change detected on ${entry.url}`);
-            await incrementChangeCount(entry.url, index);
-          }
-
-          previousHash = data.hash;
-        } catch (err) {
-          console.error(`Error monitoring ${entry.url}:`, err);
-        }
-      }, 1000);
-
-      intervals.push(interval);
-    });
-
-    return () => intervals.forEach(clearInterval);
-  }, [urls, incrementChangeCount]);
+  };
 
   return (
     <div className="dashboard-container">
@@ -225,22 +141,18 @@ function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {urls.map((url, index) => (
+              {urls.map((urlObj, index) => (
                 <tr key={index}>
-                  <td>{url.url}</td>
+                  <td>{urlObj.url}</td>
                   <td>
                     <button
-                      className={url.active ? "active" : "inactive"}
-                      onClick={() => {
-                        const updatedUrls = [...urls];
-                        updatedUrls[index].active = !updatedUrls[index].active;
-                        setUrls(updatedUrls);
-                      }}
+                      className={urlObj.active ? "active" : "inactive"}
+                      onClick={() => handleToggleActive(index)}
                     >
-                      {url.active ? "Active" : "Inactive"}
+                      {urlObj.active ? "Active" : "Inactive"}
                     </button>
                   </td>
-                  <td>{url.changes || 0} changes</td>
+                  <td>{urlObj.changes?.total || 0}</td>
                   <td>
                     <button className="remove" onClick={() => handleRemoveUrl(index)}>
                       Remove

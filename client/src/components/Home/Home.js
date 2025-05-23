@@ -6,6 +6,7 @@ import Settings from "./Settings/Settings";
 import { FaUserCircle, FaCog, FaClipboardList, FaChartBar, FaTachometerAlt } from "react-icons/fa";
 import Dashboard from "./Dashboard/Dashboard";
 import Logs from "./Logs/Logs";
+import Statistics from "./Statistics/Statistics";
 
 function Home() {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ function Home() {
       case "dashboard":
         return <Dashboard />;
       case "statistics":
-        return <div>Statistics Content</div>;
+        return <Statistics />;
       default:
         return <div>Select a tab</div>;
     }
