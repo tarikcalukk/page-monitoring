@@ -567,14 +567,15 @@ setInterval(async () => {
           // --- DOM monitoring logika ---
           const domMethod = urlObj.methods.DOM;
           const lastDomEntry = domMethod.history.length > 0 ? domMethod.history[domMethod.history.length - 1] : null;
+          // Poredi samo tekstualni sadržaj DOM-a
           if (
             !lastDomEntry ||
-            lastDomEntry.elementCount !== domStats.elementCount ||
-            lastDomEntry.maxDepth !== domStats.maxDepth ||
-            lastDomEntry.attributeCount !== domStats.attributeCount ||
             lastDomEntry._textContent !== domTextContent // koristi privremeno polje za poređenje
           ) {
+            // Upisujemo u history samo statistike, BEZ textContent!
             recordChangeInternal({ urlObj, method: "DOM", stats: domPerfStats, domStats });
+            // Dodaj privremeno _textContent na lastDomEntry samo za poređenje (NE upisuj u JSON!)
+            domMethod.history[domMethod.history.length - 1]._textContent = domTextContent;
             usersChanged = true;
           }
         } catch (err) {

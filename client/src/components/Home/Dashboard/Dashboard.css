@@ -1,102 +1,135 @@
+body {
+  background-color: #f0f4f8;
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
 .dashboard-container {
-max-width: 800px;
-margin: 50px auto;
-padding: 20px;
-background-color: #ffffff;
-border-radius: 8px;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-font-family: 'Poppins', sans-serif;
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
 }
 
-h2 {
-font-size: 28px;
-color: #2c3e50;
-margin-bottom: 20px;
+.dashboard-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #2d3436;
+  margin-bottom: 30px;
+  text-align: center;
 }
 
-.add-url-section,
-.url-list-section {
-margin-bottom: 30px;
+.card {
+  background-color: #fafafa;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+  margin-bottom: 30px;
 }
 
-.add-url-section input {
-padding: 8px;
-font-size: 16px;
-border: 1px solid #ccc;
-border-radius: 4px;
-margin-right: 10px;
+.input-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
 }
 
-.add-url-section button {
-padding: 8px 16px;
-background-color: #3498db;
-color: white;
-border: none;
-border-radius: 4px;
-font-size: 16px;
-cursor: pointer;
+.input-group input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: border 0.3s;
 }
 
-.add-url-section button:hover {
-background-color: #2980b9;
+.input-group input:focus {
+  border-color: #3498db;
 }
 
-.url-list-section table {
-width: 100%;
-border-collapse: collapse;
-}
-
-.url-list-section th,
-.url-list-section td {
-padding: 10px;
-text-align: left;
-border-bottom: 1px solid #ccc;
-}
-
-.url-list-section th {
-background-color: #f4f4f4;
-}
-
-.url-list-section button {
-padding: 6px 12px;
-font-size: 14px;
-border: none;
-border-radius: 4px;
-cursor: pointer;
-color: white;
-font-weight: bold;
-}
-
-.url-list-section button.active {
-background-color: #2ecc71; /* Green for Active */
-}
-
-.url-list-section button.inactive {
-background-color: #e74c3c; /* Red for Inactive */
-}
-
-.url-list-section button:hover {
-opacity: 0.9;
-}
-
-.url-list-section button.remove {
-  background-color: #e67e22; /* Orange for Remove */
+.input-group button {
+  padding: 12px 20px;
+  font-size: 16px;
+  background-color: #3498db;
   color: white;
-  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.input-group button:hover {
+  background-color: #2980b9;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 15px;
+}
+
+th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  color: #34495e;
+}
+
+.status-btn {
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  color: white;
+  transition: opacity 0.3s;
+}
+
+.status-btn.active {
+  background-color: #27ae60;
+}
+
+.status-btn.inactive {
+  background-color: #e74c3c;
+}
+
+.status-btn:hover {
+  opacity: 0.85;
+}
+
+.remove-btn {
+  background-color: #f39c12;
+  color: white;
+  padding: 6px 14px;
   font-size: 14px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 500;
+  transition: background 0.3s;
 }
 
-.url-list-section button.remove:hover {
-  background-color: #d35400; /* Darker orange on hover */
+.remove-btn:hover {
+  background-color: #d35400;
 }
 
-.url-list-section select {
-padding: 6px;
-font-size: 14px;
-border: 1px solid #ccc;
-border-radius: 4px;
+.empty-message {
+  color: #7f8c8d;
+  font-style: italic;
+  margin-top: 12px;
 }

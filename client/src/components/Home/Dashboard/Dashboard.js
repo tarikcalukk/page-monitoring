@@ -27,8 +27,14 @@ function Dashboard() {
   }, [userToken]);
 
   useEffect(() => {
-    fetchUrls();
-  }, [fetchUrls]);
+    fetchUrls(); // inicijalno učitavanje
+
+    const interval = setInterval(() => {
+      fetchUrls();
+    }, 1000); // svakih 10 sekundi
+
+    return () => clearInterval(interval);
+}, [fetchUrls]);
 
   const handleAddUrl = async () => {
     if (!newUrl.trim()) {
@@ -110,27 +116,32 @@ function Dashboard() {
     }
   };
 
-  return (
-    <div className="dashboard-container">
-      <h2>Dashboard</h2>
-      <div className="add-url-section">
-        <h3>Add URL for Tracking</h3>
+return (
+  <div className="dashboard-container">
+    <h2 className="dashboard-title">🔍 URL Tracker Dashboard</h2>
+
+    <div className="card add-url-card">
+      <h3>Add URL to Track</h3>
+      <div className="input-group">
         <input
           type="text"
-          placeholder="Enter URL"
+          placeholder="Enter a valid URL"
           value={newUrl}
           onChange={(e) => setNewUrl(e.target.value)}
           disabled={isValidating}
         />
         <button onClick={handleAddUrl} disabled={isValidating}>
-          {isValidating ? "Validating..." : "Add URL"}
+          {isValidating ? "Validating..." : "Add"}
         </button>
       </div>
-      <div className="url-list-section">
-        <h3>Tracked URLs</h3>
-        {urls.length === 0 ? (
-          <p>No URLs are being tracked.</p>
-        ) : (
+    </div>
+
+    <div className="card url-list-card">
+      <h3>Tracked URLs</h3>
+      {urls.length === 0 ? (
+        <p className="empty-message">No URLs are being tracked.</p>
+      ) : (
+        <div className="table-wrapper">
           <table>
             <thead>
               <tr>
@@ -146,7 +157,7 @@ function Dashboard() {
                   <td>{urlObj.url}</td>
                   <td>
                     <button
-                      className={urlObj.active ? "active" : "inactive"}
+                      className={`status-btn ${urlObj.active ? "active" : "inactive"}`}
                       onClick={() => handleToggleActive(index)}
                     >
                       {urlObj.active ? "Active" : "Inactive"}
@@ -154,7 +165,10 @@ function Dashboard() {
                   </td>
                   <td>{urlObj.changes?.total || 0}</td>
                   <td>
-                    <button className="remove" onClick={() => handleRemoveUrl(index)}>
+                    <button
+                      className="remove-btn"
+                      onClick={() => handleRemoveUrl(index)}
+                    >
                       Remove
                     </button>
                   </td>
@@ -162,10 +176,11 @@ function Dashboard() {
               ))}
             </tbody>
           </table>
-        )}
-      </div>
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
 }
 
 export default Dashboard;
