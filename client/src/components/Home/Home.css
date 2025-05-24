@@ -41,32 +41,49 @@
 .main-content {
   display: flex;
   flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Distribute items between top and bottom */
-  height: 95%;
-  width: 20%;
+  justify-content: flex-start;
+  height: 100vh;
+  width: 200px;
   background-color: #ecf0f1;
   padding: 20px 10px;
   border-right: 1px solid #bdc3c7;
   align-items: center;
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  overflow-y: auto;
+  min-width: 140px;
+  max-width: 220px;
+}
+
+.sidebar .top-tabs,
+.sidebar .bottom-tabs {
+  width: 100%;
 }
 
 .sidebar .top-tabs {
-  flex-grow: 1; /* Allow the top section to grow */
+  flex-grow: 0;
 }
 
 .sidebar .bottom-tabs {
-  margin-top: auto; /* Push the bottom tabs to the bottom */
+  margin-top: 20px;
 }
 
 .sidebar ul {
   list-style: none;
   padding: 0;
   width: 100%;
+  margin: 0;
+  /* Spriječi rastezanje ul-a */
 }
 
 .sidebar li {
@@ -116,8 +133,10 @@
 }
 
 .tab-content {
-  width: 80%;
+  width: 100%;
   padding: 30px;
   background-color: #ffffff;
   overflow-y: auto;
+  height: 100vh;
+  box-sizing: border-box;
 }

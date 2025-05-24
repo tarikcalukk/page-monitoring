@@ -21,7 +21,6 @@ function AnimatedStatCard({ label, value, unit, color, max }) {
     }, 16);
     return () => clearInterval(timer);
   }, [value, max]);
-  // Animiraj progress bar prema display, ne prema value!
   const percent = Math.min(100, (display / max) * 100);
   return (
     <div className="stat-card">
@@ -32,6 +31,84 @@ function AnimatedStatCard({ label, value, unit, color, max }) {
       <div className="stat-bar-bg">
         <div className="stat-bar" style={{ width: `${percent}%`, background: color }} />
       </div>
+    </div>
+  );
+}
+
+// Helper for generic line chart rendering
+function LineChart({ data, color, title, yLabel, height = 220, width = 520 }) {
+  const maxY = Math.max(...data, 1);
+  const points = data.map((v, i) => ({
+    x: 60 + (i / Math.max(data.length - 1, 1)) * (width - 80),
+    y: height - 40 - (v / maxY) * (height - 60),
+    value: v,
+    index: i,
+  }));
+
+  return (
+    <div className="chart-block" style={{ minWidth: width }}>
+      <div className="chart-title">{title}</div>
+      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="xy-plot">
+        {/* Y-axis */}
+        <line x1="60" y1="20" x2="60" y2={height - 40} stroke="#bbb" strokeWidth="1" />
+        {/* X-axis */}
+        <line x1="60" y1={height - 40} x2={width - 20} y2={height - 40} stroke="#bbb" strokeWidth="1" />
+        {/* Y-labels */}
+        {[0, 0.5, 1].map((p, i) => {
+          const yVal = Math.round((1 - p) * maxY);
+          return (
+            <text key={i} x="15" y={30 + p * (height - 60)} fontSize="13" fill="#888">{yVal}</text>
+          );
+        })}
+        {/* X-labels */}
+        {data.map((_, i) => (
+          <text
+            key={i}
+            x={60 + (i / Math.max(data.length - 1, 1)) * (width - 80)}
+            y={height - 20}
+            fontSize="12"
+            fill="#888"
+            textAnchor="middle"
+          >
+            {i + 1}
+          </text>
+        ))}
+        {/* Line */}
+        {points.map((pt, i, arr) =>
+          i > 0 ? (
+            <line
+              key={i}
+              x1={arr[i - 1].x}
+              y1={arr[i - 1].y}
+              x2={pt.x}
+              y2={pt.y}
+              stroke={color}
+              strokeWidth="2"
+            />
+          ) : null
+        )}
+        {/* Points + value labels */}
+        {points.map((pt, i) => (
+          <g key={i}>
+            <circle cx={pt.x} cy={pt.y} r="4" fill={color} />
+            {/* Y value above point */}
+            <text
+              x={pt.x}
+              y={pt.y - 10}
+              fontSize="12"
+              fill="#222"
+              textAnchor="middle"
+              style={{ pointerEvents: "none", userSelect: "none" }}
+            >
+              {pt.value.toFixed(0)}
+            </text>
+            {/* X value below point (index+1) */}
+            {/* (X-labels are already shown below, so this is optional) */}
+          </g>
+        ))}
+        {/* Y axis label */}
+        <text x="10" y="15" fontSize="13" fill="#888" fontWeight="bold">{yLabel}</text>
+      </svg>
     </div>
   );
 }
@@ -62,7 +139,7 @@ function Statistics() {
   const hashCpus = hashStats.map(e => e.cpu || e.lastCpu || 0);
   const hashMems = hashStats.map(e => e.memoryMb || e.lastMemoryMb || 0);
 
-  // Proseci
+  // Prosjeci
   const avgDomTime = domTimes.length ? domTimes.reduce((a, b) => a + b, 0) / domTimes.length : 0;
   const avgDomCpu = domCpus.length ? domCpus.reduce((a, b) => a + b, 0) / domCpus.length : 0;
   const avgDomMem = domMems.length ? domMems.reduce((a, b) => a + b, 0) / domMems.length : 0;
@@ -71,7 +148,7 @@ function Statistics() {
   const avgHashCpu = hashCpus.length ? hashCpus.reduce((a, b) => a + b, 0) / hashCpus.length : 0;
   const avgHashMem = hashMems.length ? hashMems.reduce((a, b) => a + b, 0) / hashMems.length : 0;
 
-  // Maksimalne vrednosti za vizualni scale (prilagodi po potrebi)
+  // Maksimalne vrijednosti za vizualni scale
   const maxTime = Math.max(
     Math.max(...domTimes, 0),
     Math.max(...hashTimes, 0),
@@ -107,6 +184,49 @@ function Statistics() {
               <AnimatedStatCard label="Avg. Time" value={avgHashTime} unit="ms" color="#3498db" max={maxTime} />
               <AnimatedStatCard label="Avg. CPU" value={avgHashCpu} unit="%" color="#27ae60" max={maxCpu} />
               <AnimatedStatCard label="Avg. Memory" value={avgHashMem} unit="MB" color="#e67e22" max={maxMem} />
+            </div>
+          </div>
+
+          <div className="charts-grid">
+            <div className="charts-col">
+              <LineChart
+                data={domTimes}
+                color="#3498db"
+                title="DOM Time (ms)"
+                yLabel="ms"
+              />
+              <LineChart
+                data={domCpus}
+                color="#27ae60"
+                title="DOM CPU (%)"
+                yLabel="%"
+              />
+              <LineChart
+                data={domMems}
+                color="#e67e22"
+                title="DOM Memory (MB)"
+                yLabel="MB"
+              />
+            </div>
+            <div className="charts-col">
+              <LineChart
+                data={hashTimes}
+                color="#e67e22"
+                title="HASH Time (ms)"
+                yLabel="ms"
+              />
+              <LineChart
+                data={hashCpus}
+                color="#8e44ad"
+                title="HASH CPU (%)"
+                yLabel="%"
+              />
+              <LineChart
+                data={hashMems}
+                color="#2980b9"
+                title="HASH Memory (MB)"
+                yLabel="MB"
+              />
             </div>
           </div>
         </>

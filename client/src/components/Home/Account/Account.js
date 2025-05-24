@@ -96,7 +96,7 @@ function Account() {
 
   return (
     <div className="account-container">
-      <h2>Account Settings</h2>
+      <h2>👤 ACCOUNT SETTINGS</h2>
       <p>
         <h3>E-mail Address</h3>
       </p>
