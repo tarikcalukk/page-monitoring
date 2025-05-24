@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FaClipboardList } from "react-icons/fa";
 import "./Logs.css";
 
 function Logs() {
@@ -27,7 +28,7 @@ function Logs() {
 
   return (
     <div className="logs-container">
-      <h2>📜 DETECTION HISTORY</h2>
+      <h2><FaClipboardList /> DETECTION HISTORY</h2>
       {logs.length === 0 ? (
         <p className="no-logs">No detections found.</p>
       ) : (

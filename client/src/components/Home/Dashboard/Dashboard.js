@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { FaTachometerAlt } from "react-icons/fa";
 import "./Dashboard.css";
 
 function Dashboard() {
@@ -118,7 +119,7 @@ function Dashboard() {
 
 return (
   <div className="dashboard-container">
-    <h2 className="dashboard-title">🔍 DASHBOARD</h2>
+    <h2 className="dashboard-title"><FaTachometerAlt />  DASHBOARD</h2>
 
     <div className="card add-url-card">
       <h3>Add URL to Track</h3>

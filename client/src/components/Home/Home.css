@@ -1,41 +1,51 @@
+/* Modern glassmorphism background */
 .home-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f7fa;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
 }
 
+/* Top bar with subtle shadow and blur */
 .top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #2c3e50;
-  padding: 10px 20px;
+  background: rgba(44, 62, 80, 0.85);
+  padding: 14px 32px;
   color: white;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 24px rgba(44, 62, 80, 0.12);
+  backdrop-filter: blur(4px);
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
 }
 
 .site-title {
   font-family: 'Trebuchet MS', sans-serif;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: bold;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(44,62,80,0.15);
 }
 
 .logout-button {
-  background-color: #e74c3c;
+  background: linear-gradient(90deg, #e74c3c 60%, #ff7675 100%);
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 10px 22px;
+  border-radius: 10px;
   cursor: pointer;
   font-weight: bold;
-  transition: background-color 0.3s ease;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.15);
+  transition: background 0.3s, transform 0.2s;
 }
 
 .logout-button:hover {
-  background-color: #c0392b;
+  background: linear-gradient(90deg, #c0392b 60%, #ff7675 100%);
+  transform: scale(1.06);
 }
 
 .main-content {
@@ -46,15 +56,17 @@
   overflow: hidden;
 }
 
+/* Sidebar glassmorphism + neumorphism */
 .sidebar {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   height: 100vh;
-  width: 200px;
-  background-color: #ecf0f1;
-  padding: 20px 10px;
-  border-right: 1px solid #bdc3c7;
+  width: 210px;
+  background: rgba(255,255,255,0.7);
+  box-shadow: 0 8px 32px 0 rgba(31,38,135,0.12);
+  padding: 28px 10px 18px 10px;
+  border-right: 1.5px solid #d1d8e0;
   align-items: center;
   position: sticky;
   top: 0;
@@ -62,7 +74,10 @@
   z-index: 10;
   overflow-y: auto;
   min-width: 140px;
-  max-width: 220px;
+  max-width: 240px;
+  backdrop-filter: blur(6px);
+  border-top-right-radius: 18px;
+  border-bottom-right-radius: 18px;
 }
 
 .sidebar .top-tabs,
@@ -72,10 +87,11 @@
 
 .sidebar .top-tabs {
   flex-grow: 0;
+  margin-bottom: 48px;
 }
 
 .sidebar .bottom-tabs {
-  margin-top: 20px;
+  margin-top: 40px;
 }
 
 .sidebar ul {
@@ -83,30 +99,48 @@
   padding: 0;
   width: 100%;
   margin: 0;
-  /* Spriječi rastezanje ul-a */
 }
 
 .sidebar li {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px;
-  margin-bottom: 10px;
-  background-color: #bdc3c7;
-  border-radius: 8px;
+  gap: 13px;
+  padding: 13px 18px;
+  margin-bottom: 14px;
+  background: rgba(236, 240, 241, 0.85);
+  border-radius: 12px;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.3s ease;
+  font-size: 17px;
+  color: #34495e;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.06);
   position: relative;
+  transition: 
+    background 0.25s,
+    color 0.25s,
+    box-shadow 0.25s,
+    transform 0.18s;
+  border: 1.5px solid transparent;
 }
 
-.sidebar li:hover {
-  background-color: #95a5a6;
-  transform: translateX(3px);
+.sidebar li svg {
+  font-size: 21px;
+  filter: drop-shadow(0 1px 2px #d1d8e0);
+  transition: color 0.2s;
 }
 
-.sidebar li i {
-  font-size: 18px;
+.sidebar li:hover,
+.sidebar li.active {
+  background: linear-gradient(90deg, #74ebd5 0%, #acb6e5 100%);
+  color: #222;
+  box-shadow: 0 4px 18px rgba(52, 73, 94, 0.13);
+  border: 1.5px solid #74ebd5;
+  transform: translateX(5px) scale(1.04);
+}
+
+.sidebar li:hover svg,
+.sidebar li.active svg {
+  color: #2980b9;
 }
 
 .sidebar li .tooltip {
@@ -115,7 +149,7 @@
   color: #fff;
   text-align: center;
   border-radius: 6px;
-  padding: 5px 8px;
+  padding: 5px 10px;
   position: absolute;
   left: 110%;
   top: 50%;
@@ -123,8 +157,10 @@
   white-space: nowrap;
   opacity: 0;
   transition: opacity 0.3s;
-  font-size: 12px;
+  font-size: 13px;
   z-index: 1;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.13);
 }
 
 .sidebar li:hover .tooltip {
@@ -134,9 +170,30 @@
 
 .tab-content {
   width: 100%;
-  padding: 30px;
-  background-color: #ffffff;
+  padding: 36px 36px 36px 36px;
+  background: rgba(255,255,255,0.92);
   overflow-y: auto;
   height: 100vh;
   box-sizing: border-box;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(44,62,80,0.07);
+  animation: fadeInTab 0.5s;
+}
+
+@keyframes fadeInTab {
+  from { opacity: 0; transform: translateY(20px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+/* Scrollbar styling for sidebar and content */
+.sidebar::-webkit-scrollbar,
+.tab-content::-webkit-scrollbar {
+  width: 8px;
+  background: #e0eafc;
+  border-radius: 8px;
+}
+.sidebar::-webkit-scrollbar-thumb,
+.tab-content::-webkit-scrollbar-thumb {
+  background: #b2bec3;
+  border-radius: 8px;
 }

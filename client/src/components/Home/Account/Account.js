@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
+import { FaUserCircle } from "react-icons/fa";
 import "./Account.css";
 
 function Account() {
@@ -96,7 +97,7 @@ function Account() {
 
   return (
     <div className="account-container">
-      <h2>👤 ACCOUNT SETTINGS</h2>
+      <h2><FaUserCircle /> ACCOUNT SETTINGS</h2>
       <p>
         <h3>E-mail Address</h3>
       </p>
