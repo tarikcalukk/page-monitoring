@@ -27,7 +27,7 @@ function Logs() {
 
   return (
     <div className="logs-container">
-      <h2>DETECTION HISTORY</h2>
+      <h2>📜 DETECTION HISTORY</h2>
       {logs.length === 0 ? (
         <p className="no-logs">No detections found.</p>
       ) : (

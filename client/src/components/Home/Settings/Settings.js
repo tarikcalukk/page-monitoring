@@ -15,7 +15,7 @@ function Settings() {
 
   return (
     <div className="settings-container">
-      <h2>Settings</h2>
+      <h2>⚙️ SETTINGS</h2>
 
       {/* Notification Settings */}
       <div className="settings-section">

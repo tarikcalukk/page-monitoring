@@ -592,57 +592,16 @@ setInterval(async () => {
   }
 }, 5 * 1000);
 
-/*
 app.get("/api/statistics", (req, res) => {
-  try {
-    const user = authorizeUser(req);
-
-    const statistics = user.urls.map((urlObj) => ({
-      url: urlObj.url,
-      method: urlObj.method,
-      changes: urlObj.changes,
-      hash: urlObj.hash,
-      dom: urlObj.dom,
-    }));
-
-    res.json({ statistics });
-  } catch (err) {
-    console.error("Error fetching statistics:", err);
-    res.status(err.status || 500).json({ msg: "Server error." });
+  const users = loadUsers();
+  let dom = [], hash = [];
+  for (const user of users) {
+    for (const urlObj of user.urls || []) {
+      if (urlObj.methods?.DOM?.history) dom = dom.concat(urlObj.methods.DOM.history);
+      if (urlObj.methods?.HASH?.history) hash = hash.concat(urlObj.methods.HASH.history);
+    }
   }
+  res.json({ dom, hash });
 });
-
-app.post("/api/increment-statistics", (req, res) => {
-  try {
-    const user = authorizeUser(req);
-    const { url, method } = req.body;
-
-    if (!url || !method) {
-      return res.status(400).json({ msg: "URL and method are required." });
-    }
-
-    const urlObj = user.urls.find((u) => u.url === url);
-    if (!urlObj) {
-      return res.status(404).json({ msg: "URL not found." });
-    }
-
-    if (method === "HASH") {
-      urlObj.hashChanges = (urlObj.hashChanges || 0) + 1;
-    } else if (method === "DOM") {
-      urlObj.domChanges = (urlObj.domChanges || 0) + 1;
-    } else {
-      return res.status(400).json({ msg: "Invalid method. Use 'HASH' or 'DOM'." });
-    }
-
-    const users = loadUsers();
-    const updatedUsers = users.map((u) => (u.email === user.email ? user : u));
-    saveUsers(updatedUsers);
-
-    res.json({ msg: "Statistics updated successfully." });
-  } catch (err) {
-    console.error("Error updating statistics:", err);
-    res.status(err.status || 500).json({ msg: err.msg || "Server error." });
-  }
-}); */
 
 app.listen(5000, () => console.log("Server running on http://localhost:5000"));

@@ -118,7 +118,7 @@ function Dashboard() {
 
 return (
   <div className="dashboard-container">
-    <h2 className="dashboard-title">🔍 URL Tracker Dashboard</h2>
+    <h2 className="dashboard-title">🔍 DASHBOARD</h2>
 
     <div className="card add-url-card">
       <h3>Add URL to Track</h3>
