@@ -18,7 +18,6 @@ function Settings() {
       <h2>⚙️ SETTINGS</h2>
 
       {/* Notification Settings */}
-      <div className="settings-section">
         <h3>Notification Settings</h3>
         <label>
           <input
@@ -28,10 +27,8 @@ function Settings() {
           />
           Enable Email Notifications
         </label>
-      </div>
 
       {/* Monitoring Settings */}
-      <div className="settings-section">
         <h3>Monitoring Settings</h3>
         <label>
           Monitoring Interval (in minutes):
@@ -68,7 +65,6 @@ function Settings() {
           />
           Enable Auto-Restart Monitoring
         </label>
-      </div>
 
       {/* Save Button */}
       <button className="save-button" onClick={handleSaveSettings}>
