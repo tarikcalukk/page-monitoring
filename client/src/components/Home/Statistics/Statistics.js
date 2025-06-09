@@ -102,8 +102,6 @@ function LineChart({ data, color, title, yLabel, height = 220, width = 520 }) {
             >
               {pt.value.toFixed(0)}
             </text>
-            {/* X value below point (index+1) */}
-            {/* (X-labels are already shown below, so this is optional) */}
           </g>
         ))}
         {/* Y axis label */}
@@ -113,21 +111,255 @@ function LineChart({ data, color, title, yLabel, height = 220, width = 520 }) {
   );
 }
 
+// UptimeCard
+function UptimeCard({ urls }) {
+  let urlList = Array.isArray(urls) ? urls : [];
+  if (urlList.length === 1 && Array.isArray(urlList[0]?.urls)) {
+    urlList = urlList[0].urls;
+  }
+  const total = urlList.length;
+  const up = urlList.filter(u => u && u.active).length;
+  const down = total - up;
+  const uptime = total ? ((up / total) * 100).toFixed(2) : 0;
+  const downtime = total ? ((down / total) * 100).toFixed(2) : 0;
+  return (
+    <div className="stat-card uptime-card">
+      <div className="stat-label">Uptime</div>
+      <div className="stat-value" style={{ color: "#27ae60" }}>{uptime}%</div>
+      <div className="stat-label">Downtime</div>
+      <div className="stat-value" style={{ color: "#e74c3c" }}>{downtime}%</div>
+    </div>
+  );
+}
+
+// TopStats - prikazuje top 3 najsporije, najčešće mijenjane i najzahtjevnije stranice
+function TopStats({ urls }) {
+
+  // Najčešće mijenjane
+  const mostChanged = [...urls]
+    .filter(u => u.changes?.total)
+    .sort((a, b) => b.changes.total - a.changes.total)
+    .slice(0, 3);
+
+  return (
+    <div className="top-stats">
+      <h4>Top 3 Najčešće mijenjane stranice</h4>
+      <ol>
+        {mostChanged.map((u, i) => (
+          <li key={i}>{u.url} - {u.changes.total} promjena</li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+// Trend performansi kroz vrijeme + najveći skok/pad
+function PerformanceTrends({ url }) {
+  const domHistory = url.methods?.DOM?.history || [];
+  const hashHistory = url.methods?.HASH?.history || [];
+
+  function getBiggestJump(arr, key = "timeMs") {
+    let maxJump = 0, from = null, to = null;
+    for (let i = 1; i < arr.length; i++) {
+      const jump = Math.abs(arr[i][key] - arr[i - 1][key]);
+      if (jump > maxJump) {
+        maxJump = jump;
+        from = arr[i - 1][key];
+        to = arr[i][key];
+      }
+    }
+    return { maxJump, from, to };
+  }
+
+  const domJump = getBiggestJump(domHistory, "timeMs");
+  const hashJump = getBiggestJump(hashHistory, "timeMs");
+
+  return (
+    <div className="perf-trends">
+      <h4>Trend performansi (DOM)</h4>
+      <MiniLineChart data={domHistory.map(h => h.timeMs)} color="#3498db" label="DOM timeMs" />
+      <div>Najveći skok: {domJump.maxJump} ms ({domJump.from} → {domJump.to})</div>
+      <h4>Trend performansi (HASH)</h4>
+      <MiniLineChart data={hashHistory.map(h => h.timeMs)} color="#e67e22" label="HASH timeMs" />
+      <div>Najveći skok: {hashJump.maxJump} ms ({hashJump.from} → {hashJump.to})</div>
+    </div>
+  );
+}
+
+function MiniLineChart({ data, color, label }) {
+  if (!data.length) return <div>Nema podataka</div>;
+  const max = Math.max(...data, 1);
+  const width = 180, height = 40;
+  return (
+    <svg width={width} height={height}>
+      {data.map((v, i, arr) =>
+        i > 0 ? (
+          <line
+            key={i}
+            x1={(i - 1) * (width / (arr.length - 1))}
+            y1={height - (arr[i - 1] / max) * (height - 10)}
+            x2={i * (width / (arr.length - 1))}
+            y2={height - (v / max) * (height - 10)}
+            stroke={color}
+            strokeWidth="2"
+          />
+        ) : null
+      )}
+    </svg>
+  );
+}
+
+function ContentChanges({ url }) {
+  const lastChange = url.methods?.DOM?.history?.slice(-1)[0] || {};
+  return (
+    <div className="content-changes">
+      <div>Ukupno promjena: <b>{url.changes?.total || 0}</b></div>
+      <div>Zadnja promjena: <b>{lastChange.time ? new Date(lastChange.time).toLocaleString() : "-"}</b></div>
+      <div>Zadnja metoda: <b>{url.changes?.lastDetectedMethod || "-"}</b></div>
+    </div>
+  );
+}
+
+function StabilityStats({ url }) {
+  const domHistory = url.methods?.DOM?.history || [];
+  // Pretpostavljamo da je svaki history zapis uspješna provjera
+  const totalChecks = domHistory.length;
+  // Prosječno vrijeme između promjena
+  let avgBetween = "-";
+  if (domHistory.length > 1) {
+    const times = domHistory.map(h => new Date(h.time).getTime()).sort();
+    let sum = 0;
+    for (let i = 1; i < times.length; i++) sum += (times[i] - times[i - 1]);
+    avgBetween = (sum / (times.length - 1) / 1000).toFixed(1) + "s";
+  }
+  return (
+    <div className="stability-stats">
+      <div>Uspješnih provjera: <b>{totalChecks}</b></div>
+      <div>Prosječno vrijeme između promjena: <b>{avgBetween}</b></div>
+    </div>
+  );
+}
+
+// 4. Strukturalna kompleksnost
+function StructureStats({ url }) {
+  const domHistory = url.methods?.DOM?.history || [];
+  const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+  const avgElem = avg(domHistory.map(h => h.elementCount || 0));
+  const maxDepth = Math.max(...domHistory.map(h => h.maxDepth || 0), 0);
+  const avgAttr = avg(domHistory.map(h => h.attributeCount || 0));
+  return (
+    <div className="structure-stats">
+      <div>Prosječan broj DOM elemenata: <b>{avgElem.toFixed(1)}</b></div>
+      <div>Maksimalna dubina DOM-a: <b>{maxDepth}</b></div>
+      <div>Prosječan broj atributa: <b>{avgAttr.toFixed(1)}</b></div>
+    </div>
+  );
+}
+
+function AdvancedAnalysis({ url }) {
+  const domHistory = url.methods?.DOM?.history || [];
+  const timeMsArr = domHistory.map(h => h.timeMs || 0);
+  const maxTime = Math.max(...timeMsArr, 0);
+  return (
+    <div className="advanced-analysis">
+      <div>Max vrijeme učitavanja: <b>{maxTime} ms</b></div>
+    </div>
+  );
+}
+
+function Histogram({ data, bins = 5 }) {
+  if (!data.length) return <div>Nema podataka</div>;
+  const min = Math.min(...data), max = Math.max(...data);
+  const step = (max - min) / bins || 1;
+  const counts = Array(bins).fill(0);
+  data.forEach(v => {
+    const idx = Math.min(bins - 1, Math.floor((v - min) / step));
+    counts[idx]++;
+  });
+  return (
+    <div className="histogram">
+    <div>Histogram vremena učitavanja:</div>
+    <div className="histogram-svg-wrapper">
+      <span className="histogram-y-title">Broj učitavanja</span>
+      <svg width={180} height={40}>
+        {counts.map((c, i) => (
+          <rect
+            key={i}
+            x={i * 36}
+            y={40 - c * 8}
+            width={30}
+            height={c * 8}
+            fill="#3498db"
+          />
+        ))}
+      </svg>
+      <div className="histogram-bar-label">
+        {Array.from({ length: bins }).map((_, i) => (
+          <span key={i}>
+            {(min + i * step).toFixed(0)}
+          </span>
+        ))}
+      </div>
+    </div>
+    <div className="histogram-x-title">Vrijeme učitavanja (ms)</div>
+  </div>
+  );
+}
+
+// 10. Export/Download (CSV)
+function ExportCSV({ url }) {
+  function download() {
+    const domHistory = url.methods?.DOM?.history || [];
+    const csv = [
+      "time,timeMs,cpu,memoryMb,elementCount,maxDepth,attributeCount",
+      ...domHistory.map(h =>
+        [h.time, h.timeMs, h.cpu, h.memoryMb, h.elementCount, h.maxDepth, h.attributeCount].join(",")
+      ),
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${url.url.replace(/[^a-z0-9]/gi, "_")}_dom_history.csv`;
+    a.click();
+  }
+  return <button className="export-csv-btn" onClick={download}>Export CSV</button>;
+}
+
+
 function Statistics() {
   const [domStats, setDomStats] = useState([]);
   const [hashStats, setHashStats] = useState([]);
+  const [urls, setUrls] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchStats() {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/statistics");
+      const res = await fetch("http://localhost:5000/api/statistics", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+      });
       const data = await res.json();
-      setDomStats((data && Array.isArray(data.dom)) ? data.dom : []);
-      setHashStats((data && Array.isArray(data.hash)) ? data.hash : []);
+      setDomStats(Array.isArray(data.dom) ? data.dom : []);
+      setHashStats(Array.isArray(data.hash) ? data.hash : []);
       setLoading(false);
     }
+    async function fetchUrls() {
+      try {
+        const res = await fetch("http://localhost:5000/api/get-urls", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          },
+        });
+        const data = await res.json();
+        setUrls(Array.isArray(data) ? data : []);
+      } catch (e) {
+        setUrls([]);
+      }
+    }
     fetchStats();
+    fetchUrls();
   }, []);
 
   // Priprema podataka za prikaz
@@ -229,6 +461,20 @@ function Statistics() {
               />
             </div>
           </div>
+          <UptimeCard urls={urls} />
+          <TopStats urls={urls} />
+          {urls.map((url, index) => (
+            <div key={index} className="url-stats-block">
+              <h3 className="url-title">{url.url}</h3>
+              <PerformanceTrends url={url} />
+              <ContentChanges url={url} />
+              <StabilityStats url={url} />
+              <StructureStats url={url} />
+              <AdvancedAnalysis url={url} />
+              <ExportCSV url={url} />
+              <Histogram data={url.methods?.DOM?.history?.map(h => h.timeMs || 0) || []} />
+            </div>
+          ))}
         </>
       )}
     </div>
