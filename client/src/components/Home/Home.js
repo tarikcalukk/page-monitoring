@@ -20,7 +20,7 @@ function Home() {
       return;
     }
 
-    fetch("http://localhost:5000/api/verify", {
+    fetch(`${process.env.REACT_APP_API_URL}/api/verify`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

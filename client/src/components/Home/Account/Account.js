@@ -57,7 +57,7 @@ function Account() {
       return;
     }
 
-    const res = await fetch("http://localhost:5000/api/change-password", {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/change-password`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -79,7 +79,7 @@ function Account() {
   
     const token = localStorage.getItem("token");
   
-    const res = await fetch("http://localhost:5000/api/delete-account", {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/delete-account`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

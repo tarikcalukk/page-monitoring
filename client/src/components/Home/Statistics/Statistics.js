@@ -335,7 +335,7 @@ function Statistics() {
   useEffect(() => {
     async function fetchStats() {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/statistics", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/statistics`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
         },
@@ -347,7 +347,7 @@ function Statistics() {
     }
     async function fetchUrls() {
       try {
-        const res = await fetch("http://localhost:5000/api/get-urls", {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/get-urls`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
           },

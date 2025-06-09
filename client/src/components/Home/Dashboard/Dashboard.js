@@ -10,7 +10,7 @@ function Dashboard() {
 
   const fetchUrls = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/get-urls", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/get-urls`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -49,7 +49,7 @@ function Dashboard() {
     setIsValidating(true);
 
     try {
-      const validateResponse = await fetch("http://localhost:5000/api/validate-url", {
+      const validateResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/validate-url`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: newUrl }),
@@ -62,7 +62,7 @@ function Dashboard() {
         return;
       }
 
-      const saveResponse = await fetch("http://localhost:5000/api/save-url", {
+      const saveResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/save-url`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -84,7 +84,7 @@ function Dashboard() {
   const handleRemoveUrl = async (index) => {
     const urlToRemove = urls[index].url;
     try {
-      const response = await fetch("http://localhost:5000/api/delete-url", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/delete-url`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -102,7 +102,7 @@ function Dashboard() {
   const handleToggleActive = async (index) => {
     const urlObj = urls[index];
     try {
-      const response = await fetch("http://localhost:5000/api/toggle-url-active", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/toggle-url-active`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

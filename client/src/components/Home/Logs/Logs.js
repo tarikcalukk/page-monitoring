@@ -9,7 +9,7 @@ function Logs() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/get-urls", {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/get-urls`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
