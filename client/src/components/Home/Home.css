@@ -18,7 +18,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(90deg, #232526 0%, #414345 100%);
+  /* Tamniji, moderni gradijent za bolji kontrast sa svijetlim elementima */
+  background: linear-gradient(90deg, #181a1b 0%, #232526 55%, #00c3ff 100%);
   padding: var(--topbar-padding);
   color: #fff;
   box-shadow: 0 0.3em 1.5em rgba(44, 62, 80, 0.18);
@@ -30,7 +31,7 @@
   top: 0;
   z-index: 20;
   gap: 2vw;
-  margin-left: 0; /* Ukloni marginu */
+  margin-left: 0;
 }
 
 body.dark-mode {
@@ -52,7 +53,7 @@ body.dark-mode textarea {
 }
 
 body.dark-mode .tab-content {
-  background: rgba(34, 40, 49, 0.97);
+  background: linear-gradient(120deg, #0f2027 0%, #2c5364 100%) !important;
   color: #fff;
   box-shadow: 0 0.3em 1.5em rgba(0,0,0,0.25);
 }
@@ -100,15 +101,42 @@ body.dark-mode .topbar-icon-btn:hover {
 }
 
 .site-title {
-  font-family: 'Trebuchet MS', 'Poppins', sans-serif;
-  font-size: 2.2vw;
-  font-weight: bold;
-  letter-spacing: 0.14em;
+  font-family: 'Orbitron', 'Trebuchet MS', 'Poppins', sans-serif;
+  font-size: 2.1vw;
+  font-weight: 900;
+  letter-spacing: 0.22em;
   color: #fff;
-  text-shadow: 0 0.15em 0.6em #00c3ff44, 0 0.2em 1em #23252633;
   display: flex;
   align-items: center;
-  gap: 0.7em;
+  gap: 0.9em;
+  background: linear-gradient(90deg, #00c3ff 0%, #7c3aed 60%, #ffe066 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: siteTitleColorShift 2.5s infinite alternate cubic-bezier(.4,2,.3,1);
+  user-select: none;
+  /* Uklonjen svaki blur i shadow */
+  text-shadow: none;
+  filter: none;
+}
+
+@keyframes siteTitleColorShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.site-title svg {
+  filter: drop-shadow(0 0 0.5em #00c3ffcc);
+  animation: globeSpin 7s linear infinite;
+}
+
+@keyframes globeSpin {
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
 }
 
 .logout-button {
@@ -135,14 +163,19 @@ body.dark-mode .topbar-icon-btn:hover {
   min-height: 0;
   height: 100%;
   overflow: hidden;
-  margin-left: 0; /* Ukloni marginu */
+  margin-left: calc(var(--sidebar-width) + 1.5em);
+  width: calc(100vw - var(--sidebar-width) - 2em);
+  justify-content: flex-start;
+  align-items: flex-start;
+  box-sizing: border-box;
+  position: relative;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  height: calc(100vh - 6em); /* Oduzmi visinu top-bar-a (prilagodi po potrebi) */
+  height: calc(100vh - 6em);
   width: var(--sidebar-width);
   min-width: var(--sidebar-min-width);
   max-width: var(--sidebar-max-width);
@@ -152,7 +185,7 @@ body.dark-mode .topbar-icon-btn:hover {
   border-right: 0.12em solid #d1d8e0;
   align-items: center;
   position: fixed;
-  top: calc(var(--topbar-padding) + 4.5em); /* Sidebar počinje ispod top-bar-a */
+  top: calc(var(--topbar-padding) + 4.5em);
   left: 0;
   z-index: 10;
   overflow-y: auto;
@@ -272,7 +305,7 @@ body.dark-mode .topbar-icon-btn:hover {
 .tab-content {
   width: 100%;
   padding: var(--tab-content-padding);
-  background: rgba(255,255,255,0.92);
+  background: #fff; /* Light mode: bijela pozadina */
   overflow-y: auto;
   min-height: 100vh;
   box-sizing: border-box;
@@ -383,7 +416,8 @@ body.dark-mode .settings-container,
 body.dark-mode .dashboard-container,
 body.dark-mode .logs-container,
 body.dark-mode .statistics-container {
-  background: #232526;
+  background: linear-gradient(135deg, #181a1b 0%, #232526 60%, #00c3ff 120%);
+
   color: #fff;
   box-shadow: 0 0.3em 1.5em rgba(0,0,0,0.25);
 }
@@ -399,4 +433,107 @@ body.dark-mode td {
   background: #232526 !important;
   color: #fff !important;
   border-color: #444 !important;
+}
+
+/* Dodaj na kraj Home.css ili u odgovarajući CSS fajl */
+.notif-popup {
+  position: absolute;
+  top: 2.7em;
+  right: 0.5em;
+  min-width: 320px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px #00c3ff22, 0 2px 8px #2325260a;
+  z-index: 100;
+  padding: 18px 0 10px 0;
+  animation: notifFadeIn 0.23s cubic-bezier(.4,2,.3,1);
+  border: 1.5px solid #e0eafc;
+}
+
+@keyframes notifFadeIn {
+  from { opacity: 0; transform: translateY(-18px) scale(0.98);}
+  to   { opacity: 1; transform: translateY(0) scale(1);}
+}
+
+.notif-popup-title {
+  font-size: 1.13rem;
+  font-weight: 700;
+  color: #00c3ff;
+  padding: 0 22px 10px 22px;
+  border-bottom: 1px solid #e0eafc;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.notif-empty {
+  color: #7f8c8d;
+  font-size: 1.05rem;
+  text-align: center;
+  padding: 18px 0 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+}
+
+.notif-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 12px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.notif-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f4f8;
+  font-size: 1.01rem;
+  transition: background 0.13s;
+}
+
+.notif-list li:last-child {
+  border-bottom: none;
+}
+
+.notif-url {
+  flex: 1 1 60%;
+  color: #232526;
+  font-weight: 600;
+  word-break: break-all;
+  font-size: 0.98em;
+}
+
+.notif-method {
+  flex: 0 0 auto;
+  font-size: 0.98em;
+  color: #7c3aed;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.2em;
+}
+
+.notif-count {
+  flex: 0 0 auto;
+  background: #e0eafc;
+  color: #00c3ff;
+  border-radius: 8px;
+  padding: 2px 10px;
+  font-size: 0.97em;
+  font-weight: 700;
+  margin-left: 6px;
+}
+
+@media (max-width: 600px) {
+  .notif-popup {
+    min-width: 90vw;
+    right: 0;
+    left: 0;
+    margin: 0 auto;
+  }
 }

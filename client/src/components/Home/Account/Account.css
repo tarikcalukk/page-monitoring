@@ -1,172 +1,275 @@
 .account-container {
   max-width: 900px;
   margin: 30px auto;
-  padding: 30px;
-  background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  padding: 30px 36px;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+  border-radius: 22px;
+  box-shadow: 0 8px 40px #00c3ff22, 0 2px 8px #2325260a;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 22px;
   box-sizing: border-box;
-  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-h2, h3 {
-  margin-bottom: 10px;
-  color: #2d3436;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 28px;
-  font-weight: 600;
+  font-family: 'Orbitron', 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border: 2.5px solid #00c3ff33;
+  position: relative;
+  overflow: hidden;
 }
 
 h2 {
-  font-size: 32px;
-  font-weight: 600;
-  color: #2d3436;
-  margin-bottom: 30px;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #00c3ff;
+  margin-bottom: 18px;
   text-align: center;
-  font-family: 'Poppins', sans-serif;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  background: linear-gradient(90deg, #00c3ff 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 8px #00c3ff44;
+  font-family: 'Orbitron', 'Poppins', sans-serif;
 }
 
 h3 {
-  font-size: 25px;
-  color: #34495e;
-  margin-bottom: 16px;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
+  font-size: 1.25rem;
+  color: #7c3aed;
+  margin-bottom: 10px;
+  font-family: 'Orbitron', 'Poppins', sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 0 0 6px #7c3aed22;
 }
 
-.password-form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  align-items: center; /* centriraj formu i dugme */
-  width: 100%;
+.account-container p, .account-container strong {
+  color: #232526;
+  font-size: 1.08em;
+  margin-bottom: 0.5em;
 }
 
-.password-inputs {
-  display: flex;
-  gap: 16px;
-  width: 100%;
-}
-
-.password-inputs input {
-  flex: 1;
-  padding: 12px 16px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-sizing: border-box;
-  background: #fafafa;
-  font-family: 'Poppins', sans-serif;
-}
-
-.password-form button {
-  align-self: flex-start;
-  padding: 12px 28px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  margin-left: 0;
-}
-
-.password-form button[type="submit"] {
-  align-self: center; /* centriraj dugme */
-  padding: 12px 20px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  margin-top: 10px;
-}
-
-.password-form button[type="submit"]:hover {
-  background-color: #2980b9;
-}
-
-.password-form button:hover {
-  background-color: #217dbb;
-}
-
-.message {
-  color: #27ae60;
-  font-weight: 600;
-  margin-top: 10px;
-}
-
-.delete-button {
-  padding: 12px 20px;
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
-  display: block;
-  text-align: center;
-}
-
-.delete-button:hover {
-  background-color: #c0392b;
-  transform: scale(1.04);
-}
-
-.delete-button:active {
-  background-color: #a93226;
-  transform: scale(0.97);
+.account-container strong {
+  color: #00c3ff;
+  font-weight: 700;
 }
 
 .password-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 18px 0;
+  margin: 18px 0 8px 0;
 }
 
 .toggle-link {
   background: none;
   border: none;
-  color: #3498db;
-  font-size: 15px;
+  color: #00c3ff;
+  font-size: 1em;
   text-decoration: underline;
   cursor: pointer;
   padding: 0;
   transition: color 0.3s;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Orbitron', 'Poppins', sans-serif;
+  letter-spacing: 0.5px;
+}
+.toggle-link:hover {
+  color: #7c3aed;
 }
 
-.toggle-link:hover {
-  color: #217dbb;
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: center;
+  width: 100%;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px #00c3ff11;
+  padding: 22px 0 18px 0;
+  margin-bottom: 10px;
+  border: 1.5px solid #00c3ff22;
+}
+
+.password-inputs {
+  display: flex;
+  gap: 16px;
+  width: 90%;
+  justify-content: center;
+}
+
+.password-inputs input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 1.08em;
+  border: 1.5px solid #00c3ff33;
+  border-radius: 8px;
+  background: #fff;
+  color: #232526;
+  font-family: 'Poppins', 'Orbitron', sans-serif;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 8px #00c3ff11;
+}
+.password-inputs input:focus {
+  border: 1.5px solid #7c3aed;
+  outline: none;
+  box-shadow: 0 0 12px #7c3aed33;
+}
+
+.password-form button[type="submit"] {
+  align-self: center;
+  padding: 12px 32px;
+  background: linear-gradient(90deg, #00c3ff 0%, #7c3aed 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.08em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.15s;
+  margin-top: 10px;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 12px #00c3ff22;
+}
+.password-form button[type="submit"]:hover {
+  background: linear-gradient(90deg, #ffe066 0%, #00c3ff 100%);
+  color: #232526;
+  transform: scale(1.04);
 }
 
 .password-checks {
   list-style: none;
   padding: 0;
   margin: 10px 0;
-  font-size: 14px;
-  font-family: 'Poppins', sans-serif;
+  font-size: 0.98em;
+  font-family: 'Poppins', 'Orbitron', sans-serif;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  justify-content: center;
 }
 
 .password-check-item {
-  margin-bottom: 5px;
   color: #e74c3c;
+  background: #e0eafc;
+  border-radius: 7px;
+  padding: 4px 12px;
+  transition: color 0.2s, background 0.2s;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
-
 .password-check-item.valid {
   color: #27ae60;
+  background: #cfdef3;
+}
+
+.message {
+  color: #27ae60;
+  font-weight: 600;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 1.08em;
+  letter-spacing: 0.5px;
+}
+
+.delete-button {
+  padding: 12px 20px;
+  background: linear-gradient(90deg, #e74c3c 60%, #ff7675 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.08em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  display: block;
+  text-align: center;
+  box-shadow: 0 2px 12px #e74c3c22;
+  letter-spacing: 1px;
+}
+.delete-button:hover {
+  background: linear-gradient(90deg, #ffe066 0%, #e74c3c 100%);
+  color: #232526;
+  transform: scale(1.04);
+}
+.delete-button:active {
+  background: linear-gradient(90deg, #a93226 0%, #ff7675 100%);
+  color: #fff;
+  transform: scale(0.97);
+}
+
+/* Dark Mode Styles */
+body.dark-mode .password-form {
+  background: linear-gradient(90deg, #232526 0%, #414345 100%) !important;
+  border: 1.5px solid #00c3ff33;
+  box-shadow: 0 2px 16px #00c3ff22;
+}
+
+body.dark-mode .password-inputs input {
+  background: #181a1b;
+  color: #fff;
+  border: 1.5px solid #00c3ff55;
+}
+
+body.dark-mode .password-inputs input:focus {
+  border: 1.5px solid #ffe066;
+  box-shadow: 0 0 12px #ffe06655;
+}
+
+body.dark-mode .password-check-item {
+  background: #232526;
+  color: #e74c3c;
+}
+body.dark-mode .password-check-item.valid {
+  background: #181a1b;
+  color: #27ae60;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .account-container {
+    padding: 10px 2vw;
+    border-radius: 12px;
+  }
+  .password-form {
+    padding: 10px 0 8px 0;
+  }
+}
+
+/* Fade-in animation for account tab */
+@keyframes fadeInAccountBlock {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.account-container {
+  animation: fadeInAccountBlock 0.5s;
+}
+
+/* Responsive pop-up effect for account on small screens */
+@media (max-width: 700px) {
+  .account-container {
+    padding: 12px 2vw 10px 2vw;
+    max-width: 99vw;
+    border-radius: 16px;
+    animation: fadeInAccountBlock 0.5s;
+    box-shadow: 0 8px 40px #00c3ff44, 0 2px 8px #23252622;
+  }
+  .password-form {
+    padding: 14px 4vw 10px 4vw;
+    border-radius: 10px;
+  }
+  .account-container h2 {
+    font-size: 1.3rem;
+  }
 }

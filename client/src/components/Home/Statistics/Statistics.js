@@ -143,7 +143,7 @@ function TopStats({ urls }) {
 
   return (
     <div className="top-stats">
-      <h4>Top 3 Najčešće mijenjane stranice</h4>
+      <h4>TOP 3 MOST FREQUENTLY CHANGED PAGES</h4>
       <ol>
         {mostChanged.map((u, i) => (
           <li key={i}>{u.url} - {u.changes.total} promjena</li>
@@ -176,18 +176,18 @@ function PerformanceTrends({ url }) {
 
   return (
     <div className="perf-trends">
-      <h4>Trend performansi (DOM)</h4>
+      <h4>Performance Trend (DOM)</h4>
       <MiniLineChart data={domHistory.map(h => h.timeMs)} color="#3498db" label="DOM timeMs" />
-      <div>Najveći skok: {domJump.maxJump} ms ({domJump.from} → {domJump.to})</div>
-      <h4>Trend performansi (HASH)</h4>
+      <div>Biggest jump: {domJump.maxJump} ms ({domJump.from} → {domJump.to})</div>
+      <h4>Performance Trend (HASH)</h4>
       <MiniLineChart data={hashHistory.map(h => h.timeMs)} color="#e67e22" label="HASH timeMs" />
-      <div>Najveći skok: {hashJump.maxJump} ms ({hashJump.from} → {hashJump.to})</div>
+      <div>Biggest jump: {hashJump.maxJump} ms ({hashJump.from} → {hashJump.to})</div>
     </div>
   );
 }
 
 function MiniLineChart({ data, color, label }) {
-  if (!data.length) return <div>Nema podataka</div>;
+  if (!data.length) return <div>No data</div>;
   const max = Math.max(...data, 1);
   const width = 180, height = 40;
   return (
@@ -213,18 +213,16 @@ function ContentChanges({ url }) {
   const lastChange = url.methods?.DOM?.history?.slice(-1)[0] || {};
   return (
     <div className="content-changes">
-      <div>Ukupno promjena: <b>{url.changes?.total || 0}</b></div>
-      <div>Zadnja promjena: <b>{lastChange.time ? new Date(lastChange.time).toLocaleString() : "-"}</b></div>
-      <div>Zadnja metoda: <b>{url.changes?.lastDetectedMethod || "-"}</b></div>
+      <div>Total changes: <b>{url.changes?.total || 0}</b></div>
+      <div>Last change: <b>{lastChange.time ? new Date(lastChange.time).toLocaleString() : "-"}</b></div>
+      <div>Last method: <b>{url.changes?.lastDetectedMethod || "-"}</b></div>
     </div>
   );
 }
 
 function StabilityStats({ url }) {
   const domHistory = url.methods?.DOM?.history || [];
-  // Pretpostavljamo da je svaki history zapis uspješna provjera
   const totalChecks = domHistory.length;
-  // Prosječno vrijeme između promjena
   let avgBetween = "-";
   if (domHistory.length > 1) {
     const times = domHistory.map(h => new Date(h.time).getTime()).sort();
@@ -234,8 +232,8 @@ function StabilityStats({ url }) {
   }
   return (
     <div className="stability-stats">
-      <div>Uspješnih provjera: <b>{totalChecks}</b></div>
-      <div>Prosječno vrijeme između promjena: <b>{avgBetween}</b></div>
+      <div>Successful checks: <b>{totalChecks}</b></div>
+      <div>Average time between changes: <b>{avgBetween}</b></div>
     </div>
   );
 }
@@ -249,9 +247,9 @@ function StructureStats({ url }) {
   const avgAttr = avg(domHistory.map(h => h.attributeCount || 0));
   return (
     <div className="structure-stats">
-      <div>Prosječan broj DOM elemenata: <b>{avgElem.toFixed(1)}</b></div>
-      <div>Maksimalna dubina DOM-a: <b>{maxDepth}</b></div>
-      <div>Prosječan broj atributa: <b>{avgAttr.toFixed(1)}</b></div>
+      <div>Average number of DOM elements: <b>{avgElem.toFixed(1)}</b></div>
+      <div>Maximum DOM depth: <b>{maxDepth}</b></div>
+      <div>Average number of attributes: <b>{avgAttr.toFixed(1)}</b></div>
     </div>
   );
 }
@@ -262,47 +260,8 @@ function AdvancedAnalysis({ url }) {
   const maxTime = Math.max(...timeMsArr, 0);
   return (
     <div className="advanced-analysis">
-      <div>Max vrijeme učitavanja: <b>{maxTime} ms</b></div>
+      <div>Max load time: <b>{maxTime} ms</b></div>
     </div>
-  );
-}
-
-function Histogram({ data, bins = 5 }) {
-  if (!data.length) return <div>Nema podataka</div>;
-  const min = Math.min(...data), max = Math.max(...data);
-  const step = (max - min) / bins || 1;
-  const counts = Array(bins).fill(0);
-  data.forEach(v => {
-    const idx = Math.min(bins - 1, Math.floor((v - min) / step));
-    counts[idx]++;
-  });
-  return (
-    <div className="histogram">
-    <div>Histogram vremena učitavanja:</div>
-    <div className="histogram-svg-wrapper">
-      <span className="histogram-y-title">Broj učitavanja</span>
-      <svg width={180} height={40}>
-        {counts.map((c, i) => (
-          <rect
-            key={i}
-            x={i * 36}
-            y={40 - c * 8}
-            width={30}
-            height={c * 8}
-            fill="#3498db"
-          />
-        ))}
-      </svg>
-      <div className="histogram-bar-label">
-        {Array.from({ length: bins }).map((_, i) => (
-          <span key={i}>
-            {(min + i * step).toFixed(0)}
-          </span>
-        ))}
-      </div>
-    </div>
-    <div className="histogram-x-title">Vrijeme učitavanja (ms)</div>
-  </div>
   );
 }
 
@@ -472,7 +431,6 @@ function Statistics() {
               <StructureStats url={url} />
               <AdvancedAnalysis url={url} />
               <ExportCSV url={url} />
-              <Histogram data={url.methods?.DOM?.history?.map(h => h.timeMs || 0) || []} />
             </div>
           ))}
         </>

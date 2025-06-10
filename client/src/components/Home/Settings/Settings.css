@@ -8,49 +8,69 @@ body {
 .settings-container {
   max-width: 900px;
   margin: 30px auto;
-  padding: 30px;
-  background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  padding: 30px 36px;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+  border-radius: 22px;
+  box-shadow: 0 8px 40px #00c3ff22, 0 2px 8px #2325260a;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 22px;
   box-sizing: border-box;
+  font-family: 'Orbitron', 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border: 2.5px solid #00c3ff33;
+  position: relative;
+  overflow: hidden;
 }
 
 .settings-container h2 {
-  font-size: 32px;
-  font-weight: 600;
-  color: #2d3436;
-  margin-bottom: 30px;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #00c3ff;
+  margin-bottom: 18px;
   text-align: center;
-  font-family: 'Poppins', sans-serif;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  background: linear-gradient(90deg, #00c3ff 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 8px #00c3ff44;
+  font-family: 'Orbitron', 'Poppins', sans-serif;
 }
 
 .settings-container h3 {
-  font-size: 25px;
-  color: #34495e;
-  margin-bottom: 16px;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
+  font-size: 1.25rem;
+  color: #7c3aed;
+  margin-bottom: 10px;
+  font-family: 'Orbitron', 'Poppins', sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 0 0 6px #7c3aed22;
 }
 
 .settings-section {
   margin-bottom: 30px;
-  background: #fafafa;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+  background: linear-gradient(90deg, #f6fafd 0%, #e0eafc 100%);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px #00c3ff11;
+  padding: 22px 24px 18px 24px;
+  border: 1.5px solid #00c3ff22;
 }
 
 .settings-container label {
   display: block;
   margin-bottom: 10px;
-  font-size: 16px;
-  color: #2d3436;
+  font-size: 1.08em;
+  color: #232526;
+  font-family: 'Poppins', 'Orbitron', sans-serif;
 }
 
 .settings-container input[type="checkbox"] {
   margin-right: 10px;
+  accent-color: #00c3ff;
 }
 
 .settings-container input[type="number"],
@@ -59,40 +79,92 @@ body {
 .settings-container input[type="password"] {
   margin-left: 10px;
   padding: 12px 16px;
-  font-size: 16px;
-  border: 1px solid #ccc;
+  font-size: 1.08em;
+  border: 1.5px solid #00c3ff33;
   border-radius: 8px;
   outline: none;
-  transition: border 0.3s;
+  transition: border 0.2s, box-shadow 0.2s;
   background: #fff;
+  color: #232526;
+  font-family: 'Poppins', 'Orbitron', sans-serif;
+  box-shadow: 0 0 8px #00c3ff11;
 }
-
 .settings-container input[type="number"]:focus,
 .settings-container select:focus,
 .settings-container input[type="text"]:focus,
 .settings-container input[type="password"]:focus {
-  border-color: #3498db;
+  border: 1.5px solid #7c3aed;
+  box-shadow: 0 0 12px #7c3aed33;
 }
 
 .settings-container .save-button {
-  padding: 12px 20px;
-  background-color: #3498db;
-  color: white;
+  padding: 12px 32px;
+  background: linear-gradient(90deg, #00c3ff 0%, #7c3aed 100%);
+  color: #fff;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 10px;
+  font-size: 1.08em;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background 0.3s, transform 0.15s;
   margin-top: 10px;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 12px #00c3ff22;
 }
-
 .settings-container .save-button:hover {
-  background-color: #2980b9;
+  background: linear-gradient(90deg, #ffe066 0%, #00c3ff 100%);
+  color: #232526;
+  transform: scale(1.04);
 }
 
 .empty-message {
   color: #7f8c8d;
   font-style: italic;
   margin-top: 12px;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .settings-container {
+    padding: 10px 2vw;
+    border-radius: 12px;
+  }
+  .settings-section {
+    padding: 10px 2vw;
+    border-radius: 10px;
+  }
+}
+
+/* Fade-in animation for settings tab */
+@keyframes fadeInSettingsBlock {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.settings-container {
+  animation: fadeInSettingsBlock 0.5s;
+}
+
+/* Responsive pop-up effect for settings on small screens */
+@media (max-width: 700px) {
+  .settings-container {
+    padding: 12px 2vw 10px 2vw;
+    max-width: 99vw;
+    border-radius: 16px;
+    animation: fadeInSettingsBlock 0.5s;
+    box-shadow: 0 8px 40px #00c3ff44, 0 2px 8px #23252622;
+  }
+  .settings-section {
+    padding: 14px 4vw 10px 4vw;
+    border-radius: 10px;
+  }
+  .settings-container h2 {
+    font-size: 1.3rem;
+  }
 }

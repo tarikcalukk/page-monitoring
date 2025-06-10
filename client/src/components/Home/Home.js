@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
 import Account from "./Account/Account";
@@ -12,6 +12,63 @@ function Home() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [darkMode, setDarkMode] = useState(false);
+
+  // --- NOTIFICATIONS STATE ---
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const notifBtnRef = useRef();
+
+  // Fetch notifications (detections) for the user
+  const fetchNotifications = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setNotifications([]);
+      return;
+    }
+    fetch(`${process.env.REACT_APP_API_URL}/api/get-urls`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(urls => {
+        const notifs = (urls || [])
+          .filter(u => u.changes && u.changes.total > 0)
+          .map(u => ({
+            url: u.url,
+            total: u.changes.total,
+            lastMethod: u.changes.lastDetectedMethod
+          }));
+        setNotifications(notifs);
+      })
+      .catch(() => setNotifications([]));
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (notifOpen) fetchNotifications();
+  }, [notifOpen]);
+
+  // Close popup on outside click
+  useEffect(() => {
+    function handleClick(e) {
+      if (
+        notifBtnRef.current &&
+        !notifBtnRef.current.contains(e.target)
+      ) {
+        setNotifOpen(false);
+      }
+    }
+    if (notifOpen) {
+      document.addEventListener("mousedown", handleClick);
+    } else {
+      document.removeEventListener("mousedown", handleClick);
+    }
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [notifOpen]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -77,21 +134,54 @@ function Home() {
         <FaGlobe style={{ color: "#00c3ff", fontSize: "1.5em" }} />
         Site Monitoring
       </span>
-      <div className="topbar-icons">
-        <button className="topbar-icon-btn" title="Notifications">
+      <div className="topbar-icons" style={{ position: "relative" }}>
+        <button
+          className="topbar-icon-btn"
+          title="Notifications"
+          ref={notifBtnRef}
+          onClick={() => setNotifOpen((v) => !v)}
+          style={{ position: "relative" }}
+        >
           <FaBell />
-          <span style={{
-            position: "absolute",
-            top: "0.5em",
-            right: "0.5em",
-            background: "#ff7675",
-            color: "#fff",
-            borderRadius: "50%",
-            fontSize: "0.7em",
-            padding: "0.15em 0.45em",
-            fontWeight: "bold"
-          }}>3</span>
+          {notifications.length > 0 && (
+            <span style={{
+              position: "absolute",
+              top: "0.5em",
+              right: "0.5em",
+              background: "#ff7675",
+              color: "#fff",
+              borderRadius: "50%",
+              fontSize: "0.7em",
+              padding: "0.15em 0.45em",
+              fontWeight: "bold"
+            }}>
+              {notifications.length}
+            </span>
+          )}
         </button>
+        {notifOpen && (
+          <div className="notif-popup">
+            <div className="notif-popup-title">
+              <span role="img" aria-label="bell">🔔</span> Detections
+            </div>
+            {notifications.length === 0 ? (
+              <div className="notif-empty">
+                <span role="img" aria-label="check">✅</span> No detections yet!
+              </div>
+            ) : (
+              <ul className="notif-list">
+                {notifications.map((n, i) => (
+                  <li key={n.url + i}>
+                    <span className="notif-url">{n.url}</span>
+                    <span className="notif-count">
+                      <b>{n.total}</b> detections
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
         <button
           className="topbar-icon-btn"
           title="Dark mode"

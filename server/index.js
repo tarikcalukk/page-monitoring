@@ -489,7 +489,7 @@ setInterval(async () => {
         if (!urlObj.active) continue;
 
         try {
-          // --- HASH (meri ceo proces) ---
+          // --- HASH (meri cijeli proces) ---
           const hashStart = Date.now();
           const hashStartCpu = process.cpuUsage();
           const hashStartMem = process.memoryUsage().heapUsed / 1024 / 1024;
@@ -498,10 +498,8 @@ setInterval(async () => {
           const html = await response.text();
           const $hash = cheerio.load(html);
 
-          // Ukloni dinamičke elemente za hash
           $hash('script, iframe, [id*="ad"], [class*="ad"], [src*="analytics"], [src*="doubleclick"], [src*="googletagmanager"]').remove();
 
-          // Hashiraj samo <main> ako postoji, inače <body>
           const mainContent = $hash('main').length ? $hash('main').html() : $hash('body').html();
           const hash = crypto.createHash("sha256").update(mainContent || '').digest("hex");
 
@@ -516,7 +514,15 @@ setInterval(async () => {
             hash
           };
 
-          // --- HASH monitoring logika ---
+          // IGNORIŠI DETEKCIJU ako je bilo koji resurs 0
+          if (
+            hashStats.lastTimeMs === 0 ||
+            hashStats.lastCpu === 0 ||
+            hashStats.lastMemoryMb === 0
+          ) {
+            continue;
+          }
+
           const hashMethod = urlObj.methods.HASH;
           const lastHashEntry = hashMethod.history.length > 0 ? hashMethod.history[hashMethod.history.length - 1] : null;
           if (!lastHashEntry || lastHashEntry.hash !== hash) {
@@ -524,12 +530,11 @@ setInterval(async () => {
             usersChanged = true;
           }
 
-          // --- DOM (meri ceo proces: fetch + parsiranje + statistika) ---
+          // --- DOM (meri cijeli proces: fetch + parsiranje + statistika) ---
           const domStart = Date.now();
           const domStartCpu = process.cpuUsage();
           const domStartMem = process.memoryUsage().heapUsed / 1024 / 1024;
 
-          // Parsiraj HTML ponovo za DOM
           const $dom = cheerio.load(html);
           $dom('script, iframe, [id*="ad"], [class*="ad"], [src*="analytics"], [src*="doubleclick"], [src*="googletagmanager"]').remove();
 
@@ -564,17 +569,22 @@ setInterval(async () => {
             lastMemoryMb: Math.max(0, domEndMem - domStartMem)
           };
 
-          // --- DOM monitoring logika ---
+          // IGNORIŠI DETEKCIJU ako je bilo koji resurs 0
+          if (
+            domPerfStats.lastTimeMs === 0 ||
+            domPerfStats.lastCpu === 0 ||
+            domPerfStats.lastMemoryMb === 0
+          ) {
+            continue;
+          }
+
           const domMethod = urlObj.methods.DOM;
           const lastDomEntry = domMethod.history.length > 0 ? domMethod.history[domMethod.history.length - 1] : null;
-          // Poredi samo tekstualni sadržaj DOM-a
           if (
             !lastDomEntry ||
-            lastDomEntry._textContent !== domTextContent // koristi privremeno polje za poređenje
+            lastDomEntry._textContent !== domTextContent
           ) {
-            // Upisujemo u history samo statistike, BEZ textContent!
             recordChangeInternal({ urlObj, method: "DOM", stats: domPerfStats, domStats });
-            // Dodaj privremeno _textContent na lastDomEntry samo za poređenje (NE upisuj u JSON!)
             domMethod.history[domMethod.history.length - 1]._textContent = domTextContent;
             usersChanged = true;
           }

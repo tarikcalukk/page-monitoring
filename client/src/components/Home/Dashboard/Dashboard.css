@@ -9,7 +9,7 @@ body {
   max-width: 900px;
   margin: 30px auto;
   padding: 30px;
-  background-color: #ffffff;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
 }
@@ -23,7 +23,7 @@ body {
 }
 
 .card {
-  background-color: #fafafa;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
   padding: 25px;
   border-radius: 12px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
@@ -84,7 +84,7 @@ th, td {
 }
 
 th {
-  background-color: #f3f4f6;
+  background: linear-gradient(120deg, #6a8db1 0%, #cfdef3 100%);
   font-weight: 600;
   color: #34495e;
 }
@@ -133,3 +133,25 @@ th {
   font-style: italic;
   margin-top: 12px;
 }
+
+@keyframes fadeInDashboardField {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dashboard-container > * {
+  opacity: 0;
+  animation: fadeInDashboardField 0.5s forwards;
+}
+.dashboard-container > *:nth-child(1) { animation-delay: 0.05s; }
+.dashboard-container > *:nth-child(2) { animation-delay: 0.13s; }
+.dashboard-container > *:nth-child(3) { animation-delay: 0.21s; }
+.dashboard-container > *:nth-child(4) { animation-delay: 0.29s; }
+.dashboard-container > *:nth-child(5) { animation-delay: 0.37s; }
+.dashboard-container > *:nth-child(6) { animation-delay: 0.45s; }

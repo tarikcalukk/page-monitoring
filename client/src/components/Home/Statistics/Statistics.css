@@ -1,8 +1,8 @@
 .statistics-container {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 30px auto;
   padding: 24px;
-  background-color: #fff;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.06);
   box-sizing: border-box;
@@ -449,6 +449,104 @@
   }
 }
 
+/* Moderni prikaz za tekstualne blokove statistike */
+.content-changes,
+.stability-stats,
+.structure-stats,
+.advanced-analysis {
+  background: linear-gradient(90deg, #e3f6fd 0%, #e3ffe8 100%);
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(52, 152, 219, 0.07);
+  padding: 18px 24px 14px 24px;
+  margin: 12px auto 10px auto;
+  max-width: 520px;
+  width: 100%;
+  font-size: 1.08rem;
+  color: #34495e;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  transition: box-shadow 0.18s, transform 0.13s;
+}
+
+.content-changes::before {
+  content: "🔄";
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  font-size: 1.3em;
+  opacity: 0.7;
+}
+.stability-stats::before {
+  content: "🛡️";
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  font-size: 1.3em;
+  opacity: 0.7;
+}
+.structure-stats::before {
+  content: "🏗️";
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  font-size: 1.3em;
+  opacity: 0.7;
+}
+.advanced-analysis::before {
+  content: "🚀";
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  font-size: 1.3em;
+  opacity: 0.7;
+}
+
+.content-changes b,
+.stability-stats b,
+.structure-stats b,
+.advanced-analysis b {
+  color: #16a085;
+  font-weight: 700;
+  font-size: 1.12em;
+  margin-left: 4px;
+  letter-spacing: 0.5px;
+}
+
+.content-changes div,
+.stability-stats div,
+.structure-stats div,
+.advanced-analysis div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  margin-bottom: 2px;
+}
+
+@media (max-width: 700px) {
+  .content-changes,
+  .stability-stats,
+  .structure-stats,
+  .advanced-analysis {
+    padding: 12px 6px 10px 36px;
+    font-size: 1rem;
+    max-width: 100%;
+  }
+  .content-changes::before,
+  .stability-stats::before,
+  .structure-stats::before,
+  .advanced-analysis::before {
+    left: 6px;
+    top: 10px;
+    font-size: 1.1em;
+  }
+}
+
 .export-csv-btn {
   background: linear-gradient(90deg, #7c3aed 0%, #3498db 100%);
   color: #fff;
@@ -493,3 +591,101 @@
     padding: 10px 12px;
   }
 }
+
+.perf-trends,
+.performance-trends {
+  background: linear-gradient(90deg, #f3e9ff 0%, #e3f6fd 100%);
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.07);
+  padding: 18px 24px 14px 24px;
+  margin: 12px auto 10px auto;
+  max-width: 520px;
+  width: 100%;
+  font-size: 1.08rem;
+  color: #34495e;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  transition: box-shadow 0.18s, transform 0.13s;
+}
+
+.perf-trends::before,
+.performance-trends::before {
+  content: "📈";
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  font-size: 1.3em;
+  opacity: 0.7;
+}
+
+.perf-trends h4,
+.performance-trends h4 {
+  font-size: 1.13em;
+  font-weight: 700;
+  color: #7c3aed;
+  margin: 10px 0 6px 0;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+}
+
+.perf-trends div,
+.performance-trends div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  margin-bottom: 2px;
+}
+
+.perf-trends svg,
+.performance-trends svg {
+  margin: 0 auto 8px auto;
+  display: block;
+}
+
+@media (max-width: 700px) {
+  .perf-trends,
+  .performance-trends {
+    padding: 12px 6px 10px 36px;
+    font-size: 1rem;
+    max-width: 100%;
+  }
+  .perf-trends::before,
+  .performance-trends::before {
+    left: 6px;
+    top: 10px;
+    font-size: 1.1em;
+  }
+}
+
+/* Animacija za svako polje u statistics */
+@keyframes fadeInStatisticsField {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.statistics-container > * {
+  opacity: 0;
+  animation: fadeInStatisticsField 0.5s forwards;
+}
+.statistics-container > *:nth-child(1) { animation-delay: 0.05s; }
+.statistics-container > *:nth-child(2) { animation-delay: 0.13s; }
+.statistics-container > *:nth-child(3) { animation-delay: 0.21s; }
+.statistics-container > *:nth-child(4) { animation-delay: 0.29s; }
+.statistics-container > *:nth-child(5) { animation-delay: 0.37s; }
+.statistics-container > *:nth-child(6) { animation-delay: 0.45s; }
+/* Dodaj još po potrebi za više polja */
