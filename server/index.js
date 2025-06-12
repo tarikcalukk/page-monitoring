@@ -8,6 +8,8 @@ const crypto = require("crypto");
 const fetch = require("node-fetch"); 
 const fs = require("fs");
 const path = require("path");
+const nodemailer = require("nodemailer");
+const { Parser } = require('json2csv');
 require("dotenv").config();
 
 const app = express();
@@ -19,6 +21,97 @@ const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   console.error("JWT_SECRET is not defined in .env file");
   process.exit(1);
+}
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+async function sendChangeEmail(to, url, urlObj) {
+  // Pripremi CSV attachment sa zadnjom promjenom (HASH i DOM)
+  const lastHash = urlObj.methods.HASH.history[urlObj.methods.HASH.history.length - 1];
+  const lastDom = urlObj.methods.DOM.history[urlObj.methods.DOM.history.length - 1];
+
+  const csvFields = [
+    { label: 'Method', value: 'method' },
+    { label: 'Time', value: 'time' },
+    { label: 'Time (ms)', value: 'timeMs' },
+    { label: 'CPU (%)', value: 'cpu' },
+    { label: 'Memory (MB)', value: 'memoryMb' },
+  ];
+
+  const csvData = [
+    { method: 'HASH', ...lastHash },
+    { method: 'DOM', ...lastDom }
+  ];
+
+  const parser = new Parser({ fields: csvFields });
+  const csv = parser.parse(csvData);
+
+  // Pripremi HTML poruku
+  const html = `
+    <div style="font-family:Segoe UI,Arial,sans-serif;font-size:16px;color:#232526;">
+      <h2 style="color:#00c3ff;">Promjena detektovana na vašoj stranici!</h2>
+      <p>
+        Poštovani,<br>
+        Detektovana je nova promjena na vašoj nadgledanoj stranici:<br>
+        <a href="${url}" target="_blank" style="color:#7c3aed;">${url}</a>
+      </p>
+      <h3 style="color:#7c3aed;">Detalji promjene:</h3>
+      <ul>
+        <li><b>Ukupno promjena:</b> ${urlObj.changes?.total ?? 0}</li>
+        <li><b>Posljednja metoda detekcije:</b> ${urlObj.changes?.lastDetectedMethod ?? '-'}</li>
+        <li><b>Zadnje ažuriranje:</b> ${urlObj.lastUpdated ? new Date(urlObj.lastUpdated).toLocaleString() : '-'}</li>
+      </ul>
+      <h4 style="margin-top:18px;">Zadnja mjerenja:</h4>
+      <table border="1" cellpadding="6" style="border-collapse:collapse;margin-top:8px;">
+        <tr>
+          <th>Metoda</th>
+          <th>Vrijeme (ms)</th>
+          <th>CPU (%)</th>
+          <th>Memorija (MB)</th>
+        </tr>
+        <tr>
+          <td>HASH</td>
+          <td>${lastHash?.timeMs ?? '-'}</td>
+          <td>${lastHash?.cpu?.toFixed(2) ?? '-'}</td>
+          <td>${lastHash?.memoryMb?.toFixed(2) ?? '-'}</td>
+          <td>-</td>
+          <td>-</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>DOM</td>
+          <td>${lastDom?.timeMs ?? '-'}</td>
+          <td>${lastDom?.cpu?.toFixed(2) ?? '-'}</td>
+          <td>${lastDom?.memoryMb?.toFixed(2) ?? '-'}</td>
+
+        </tr>
+      </table>
+      <p style="margin-top:18px;">
+        U prilogu se nalazi CSV sa detaljima zadnje promjene.<br>
+        <i>Ovo je automatska poruka Page Monitoring servisa.</i>
+      </p>
+    </div>
+  `;
+
+  return transporter.sendMail({
+    from: `"Page Monitor" <${process.env.EMAIL_USER}>`,
+    to,
+    subject: "Page Change Detected - Detaljan Izvještaj",
+    text: `Promjena je detektovana na vašoj stranici: ${url}\n\nDetalji:\n- Ukupno promjena: ${urlObj.changes?.total ?? 0}\n- Posljednja metoda: ${urlObj.changes?.lastDetectedMethod ?? '-'}\n- Zadnje ažuriranje: ${urlObj.lastUpdated}\n\nPogledajte CSV u prilogu za više informacija.`,
+    html,
+    attachments: [
+      {
+        filename: 'change-details.csv',
+        content: csv
+      }
+    ]
+  });
 }
 
 function loadUsers() {
@@ -528,6 +621,7 @@ setInterval(async () => {
           if (!lastHashEntry || lastHashEntry.hash !== hash) {
             recordChangeInternal({ urlObj, method: "HASH", stats: hashStats });
             usersChanged = true;
+            await sendChangeEmail(user.email, urlObj.url, urlObj);          
           }
 
           // --- DOM (meri cijeli proces: fetch + parsiranje + statistika) ---

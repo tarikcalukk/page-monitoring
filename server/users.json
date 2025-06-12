@@ -3,5 +3,91 @@
     "email": "tarik@gmail.com",
     "password": "$2b$10$nL7rbE0hqs7Of0oz009rG.eBkOVa4N7FwXQGqv2wrxSeTcrw5A7aW",
     "urls": []
+  },
+  {
+    "email": "tarik.caluk@gmail.com",
+    "password": "$2b$10$HbOkIVJV.9w.34k7E2CRCuN1NE4/svU6ziZKrv/XanV45k05UMdo6",
+    "urls": [
+      {
+        "url": "https://klix.ba",
+        "active": false,
+        "changes": {
+          "total": 1,
+          "lastDetectedMethod": "HASH"
+        },
+        "lastUpdated": "2025-06-12T18:11:40.171Z",
+        "methods": {
+          "HASH": {
+            "history": [
+              {
+                "time": "2025-06-12T18:11:40.171Z",
+                "timeMs": 346,
+                "cpu": 31.502890173410403,
+                "memoryMb": 1.07830810546875,
+                "hash": "a35dc27db19c7c2a5206d901163b7610e7b714bafd062d0a893a7b93999e9450"
+              }
+            ],
+            "totalTimeMs": 346,
+            "avgTimeMs": 346,
+            "totalCpu": 31.502890173410403,
+            "avgCpu": 31.502890173410403,
+            "totalMemoryMb": 1.07830810546875,
+            "avgMemoryMb": 1.07830810546875
+          },
+          "DOM": {
+            "history": [],
+            "totalTimeMs": 0,
+            "avgTimeMs": 0,
+            "totalCpu": 0,
+            "avgCpu": 0,
+            "totalMemoryMb": 0,
+            "avgMemoryMb": 0
+          }
+        }
+      }
+    ]
+  },
+  {
+    "email": "habibacemal@gmail.com",
+    "password": "$2b$10$YOwCfB8rruXQwnDgPnFEIOiik0aHNzkKQQEhYT18xkLjH0ZIkO4i.",
+    "urls": [
+      {
+        "url": "https://klix.ba",
+        "active": false,
+        "changes": {
+          "total": 1,
+          "lastDetectedMethod": "HASH"
+        },
+        "lastUpdated": "2025-06-12T18:32:21.259Z",
+        "methods": {
+          "HASH": {
+            "history": [
+              {
+                "time": "2025-06-12T18:32:21.259Z",
+                "timeMs": 224,
+                "cpu": 7.142857142857142,
+                "memoryMb": 0.10292816162109375,
+                "hash": "a35dc27db19c7c2a5206d901163b7610e7b714bafd062d0a893a7b93999e9450"
+              }
+            ],
+            "totalTimeMs": 224,
+            "avgTimeMs": 224,
+            "totalCpu": 7.142857142857142,
+            "avgCpu": 7.142857142857142,
+            "totalMemoryMb": 0.10292816162109375,
+            "avgMemoryMb": 0.10292816162109375
+          },
+          "DOM": {
+            "history": [],
+            "totalTimeMs": 0,
+            "avgTimeMs": 0,
+            "totalCpu": 0,
+            "avgCpu": 0,
+            "totalMemoryMb": 0,
+            "avgMemoryMb": 0
+          }
+        }
+      }
+    ]
   }
 ]
