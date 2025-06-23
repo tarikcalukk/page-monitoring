@@ -80,9 +80,6 @@ async function sendChangeEmail(to, url, urlObj) {
           <td>${lastHash?.timeMs ?? '-'}</td>
           <td>${lastHash?.cpu?.toFixed(2) ?? '-'}</td>
           <td>${lastHash?.memoryMb?.toFixed(2) ?? '-'}</td>
-          <td>-</td>
-          <td>-</td>
-          <td>-</td>
         </tr>
         <tr>
           <td>DOM</td>
@@ -582,15 +579,16 @@ setInterval(async () => {
         if (!urlObj.active) continue;
 
         try {
-          // --- HASH (meri cijeli proces) ---
+          // --- FETCH van mjerenja ---
+          const response = await fetch(urlObj.url);
+          const html = await response.text();
+
+          // --- HASH (samo parsiranje + hashing) ---
           const hashStart = Date.now();
           const hashStartCpu = process.cpuUsage();
           const hashStartMem = process.memoryUsage().heapUsed / 1024 / 1024;
 
-          const response = await fetch(urlObj.url);
-          const html = await response.text();
           const $hash = cheerio.load(html);
-
           $hash('script, iframe, [id*="ad"], [class*="ad"], [src*="analytics"], [src*="doubleclick"], [src*="googletagmanager"]').remove();
 
           const mainContent = $hash('main').length ? $hash('main').html() : $hash('body').html();
@@ -607,7 +605,6 @@ setInterval(async () => {
             hash
           };
 
-          // IGNORIŠI DETEKCIJU ako je bilo koji resurs 0
           if (
             hashStats.lastTimeMs === 0 ||
             hashStats.lastCpu === 0 ||
@@ -621,10 +618,9 @@ setInterval(async () => {
           if (!lastHashEntry || lastHashEntry.hash !== hash) {
             recordChangeInternal({ urlObj, method: "HASH", stats: hashStats });
             usersChanged = true;
-            await sendChangeEmail(user.email, urlObj.url, urlObj);          
           }
 
-          // --- DOM (meri cijeli proces: fetch + parsiranje + statistika) ---
+          // --- DOM (samo parsiranje + analiza) ---
           const domStart = Date.now();
           const domStartCpu = process.cpuUsage();
           const domStartMem = process.memoryUsage().heapUsed / 1024 / 1024;
@@ -634,15 +630,14 @@ setInterval(async () => {
 
           function getDomDepth($, element, depth = 0) {
             const children = element.children();
-            if (!children || children.length === 0) {
-              return depth;
-            }
+            if (!children || children.length === 0) return depth;
             let maxDepth = depth;
             children.each((_, child) => {
               maxDepth = Math.max(maxDepth, getDomDepth($, $(child), depth + 1));
             });
             return maxDepth;
           }
+
           const domTextContent = $dom("main").length
             ? $dom("main").text().replace(/\s+/g, " ").trim()
             : $dom("body").text().replace(/\s+/g, " ").trim();
@@ -663,7 +658,6 @@ setInterval(async () => {
             lastMemoryMb: Math.max(0, domEndMem - domStartMem)
           };
 
-          // IGNORIŠI DETEKCIJU ako je bilo koji resurs 0
           if (
             domPerfStats.lastTimeMs === 0 ||
             domPerfStats.lastCpu === 0 ||
@@ -694,7 +688,8 @@ setInterval(async () => {
   } catch (err) {
     console.error("Monitoring service error:", err.message);
   }
-}, 5 * 1000);
+}, 1000);
+
 
 app.get("/api/statistics", (req, res) => {
   const users = loadUsers();
@@ -706,6 +701,41 @@ app.get("/api/statistics", (req, res) => {
     }
   }
   res.json({ dom, hash });
+});
+
+app.get("/api/settings", (req, res) => {
+  try {
+    const user = authorizeUser(req);
+    res.json(user.settings || {});
+  } catch (err) {
+    res.status(err.status || 500).json({ msg: err.msg || "Server error." });
+  }
+});
+
+app.post("/api/settings", (req, res) => {
+  try {
+    const user = authorizeUser(req);
+    user.settings = req.body;
+    const users = loadUsers();
+    const updatedUsers = users.map(u => u.email === user.email ? user : u);
+    saveUsers(updatedUsers);
+    res.json({ msg: "Settings saved." });
+  } catch (err) {
+    res.status(err.status || 500).json({ msg: err.msg || "Server error." });
+  }
+});
+
+app.post("/api/send-report", async (req, res) => {
+  try {
+    const user = authorizeUser(req);
+    // Pošalji izvještaj za sve URL-ove korisnika
+    for (const urlObj of user.urls) {
+      await sendChangeEmail(user.email, urlObj.url, urlObj);
+    }
+    res.json({ msg: "Report sent to your email." });
+  } catch (err) {
+    res.status(err.status || 500).json({ msg: err.msg || "Failed to send report." });
+  }
 });
 
 app.listen(5000, () => console.log("Server running on http://localhost:5000"));

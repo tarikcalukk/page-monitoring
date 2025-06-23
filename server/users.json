@@ -1,12 +1,12 @@
 [
   {
     "email": "tarik@gmail.com",
-    "password": "$2b$10$nL7rbE0hqs7Of0oz009rG.eBkOVa4N7FwXQGqv2wrxSeTcrw5A7aW",
+    "password": "$2b$10$v6zjs3N6rta7eRojeLD9QO9SqE4LMLMdfsyIf2Yy9RhlalZ.m6Qse",
     "urls": []
   },
   {
-    "email": "tarik.caluk@gmail.com",
-    "password": "$2b$10$HbOkIVJV.9w.34k7E2CRCuN1NE4/svU6ziZKrv/XanV45k05UMdo6",
+    "email": "habibacemal@gmail.com",
+    "password": "$2b$10$t/dTnC6msnoU7xJzSjpU3u1AE0BcveXWHzGmq6wmAiTuRjesmD1m.",
     "urls": [
       {
         "url": "https://klix.ba",
@@ -15,24 +15,24 @@
           "total": 1,
           "lastDetectedMethod": "HASH"
         },
-        "lastUpdated": "2025-06-12T18:11:40.171Z",
+        "lastUpdated": "2025-06-23T19:52:55.839Z",
         "methods": {
           "HASH": {
             "history": [
               {
-                "time": "2025-06-12T18:11:40.171Z",
-                "timeMs": 346,
-                "cpu": 31.502890173410403,
-                "memoryMb": 1.07830810546875,
+                "time": "2025-06-23T19:52:55.839Z",
+                "timeMs": 4,
+                "cpu": 400,
+                "memoryMb": 0.31491851806640625,
                 "hash": "a35dc27db19c7c2a5206d901163b7610e7b714bafd062d0a893a7b93999e9450"
               }
             ],
-            "totalTimeMs": 346,
-            "avgTimeMs": 346,
-            "totalCpu": 31.502890173410403,
-            "avgCpu": 31.502890173410403,
-            "totalMemoryMb": 1.07830810546875,
-            "avgMemoryMb": 1.07830810546875
+            "totalTimeMs": 4,
+            "avgTimeMs": 4,
+            "totalCpu": 400,
+            "avgCpu": 400,
+            "totalMemoryMb": 0.31491851806640625,
+            "avgMemoryMb": 0.31491851806640625
           },
           "DOM": {
             "history": [],
@@ -44,47 +44,120 @@
             "avgMemoryMb": 0
           }
         }
-      }
-    ]
-  },
-  {
-    "email": "habibacemal@gmail.com",
-    "password": "$2b$10$YOwCfB8rruXQwnDgPnFEIOiik0aHNzkKQQEhYT18xkLjH0ZIkO4i.",
-    "urls": [
+      },
       {
-        "url": "https://klix.ba",
+        "url": "https://www.timeanddate.com/worldclock/\t",
         "active": false,
         "changes": {
-          "total": 1,
-          "lastDetectedMethod": "HASH"
+          "total": 10,
+          "lastDetectedMethod": "DOM"
         },
-        "lastUpdated": "2025-06-12T18:32:21.259Z",
+        "lastUpdated": "2025-06-23T19:53:16.891Z",
         "methods": {
           "HASH": {
             "history": [
               {
-                "time": "2025-06-12T18:32:21.259Z",
-                "timeMs": 224,
-                "cpu": 7.142857142857142,
-                "memoryMb": 0.10292816162109375,
-                "hash": "a35dc27db19c7c2a5206d901163b7610e7b714bafd062d0a893a7b93999e9450"
+                "time": "2025-06-23T19:52:34.764Z",
+                "timeMs": 109,
+                "cpu": 214.67889908256882,
+                "memoryMb": 2.5394210815429688,
+                "hash": "81e0294898fa57f05487026c3a3e8a39082587475cc16a5a580cf5e724472fac"
+              },
+              {
+                "time": "2025-06-23T19:52:35.613Z",
+                "timeMs": 31,
+                "cpu": 151.61290322580646,
+                "memoryMb": 2.740631103515625,
+                "hash": "c4668ebed010aaf7eb00c571c83917d44e3020ea128a78f9ca14d51a4442ec77"
+              },
+              {
+                "time": "2025-06-23T19:52:52.723Z",
+                "timeMs": 21,
+                "cpu": 300,
+                "memoryMb": 0.6341934204101562,
+                "hash": "353d02682e79e287b89d6dd9e3aab126db8ea2db4de442df7ace5ff5db411827"
+              },
+              {
+                "time": "2025-06-23T19:53:15.998Z",
+                "timeMs": 21,
+                "cpu": 147.61904761904762,
+                "memoryMb": 2.549072265625,
+                "hash": "a7ec07f70c65329ed88da1b7e71a73201b56bf5c2411866d9f8dc807d66ee636"
+              },
+              {
+                "time": "2025-06-23T19:53:16.870Z",
+                "timeMs": 14,
+                "cpu": 335.7142857142857,
+                "memoryMb": 1.4456863403320312,
+                "hash": "7c606f4441d435bb03e405a6bff197c59f5e51df9db2836c05a3a340e0f2b7e0"
               }
             ],
-            "totalTimeMs": 224,
-            "avgTimeMs": 224,
-            "totalCpu": 7.142857142857142,
-            "avgCpu": 7.142857142857142,
-            "totalMemoryMb": 0.10292816162109375,
-            "avgMemoryMb": 0.10292816162109375
+            "totalTimeMs": 196,
+            "avgTimeMs": 39.2,
+            "totalCpu": 1149.6251356417085,
+            "avgCpu": 229.9250271283417,
+            "totalMemoryMb": 9.909004211425781,
+            "avgMemoryMb": 1.9818008422851563
           },
           "DOM": {
-            "history": [],
-            "totalTimeMs": 0,
-            "avgTimeMs": 0,
-            "totalCpu": 0,
-            "avgCpu": 0,
-            "totalMemoryMb": 0,
-            "avgMemoryMb": 0
+            "history": [
+              {
+                "time": "2025-06-23T19:52:34.815Z",
+                "timeMs": 51,
+                "cpu": 368.62745098039215,
+                "memoryMb": 3.3083648681640625,
+                "elementCount": 997,
+                "maxDepth": 14,
+                "attributeCount": 1228,
+                "_textContent": "123691245781011 Sarajevopon 21:52:34New Yorkpon 15:52:34Londonpon 20:52:34Tokyouto 04:52:34 Popular Lists: Africa | North America | South America | Asia | Australia/Pacific | Europe | Capitals Sort By: CityCountryTimeCities Shown: Capitals (215)Most Popular (143)Popular (357)Somewhat Popular (471)Extended ListAccrapon 19:52Casablanca *pon 20:52Kolkatauto 01:22Reykjavikpon 19:52Addis Ababapon 22:52Chicago *pon 14:52Kuala Lumpuruto 03:52Rio de Janeiropon 16:52Adelaideuto 05:22Copenhagen *pon 21:52Kuwait Citypon 22:52Riyadhpon 22:52Algierspon 20:52Dallas *pon 14:52Kyiv *pon 22:52Rome *pon 21:52Almatyuto 00:52Dar es Salaampon 22:52La Pazpon 15:52Salt Lake City *pon 13:52Ammanpon 22:52Darwinuto 05:22Lagospon 20:52San Francisco *pon 12:52Amsterdam *pon 21:52Denver *pon 13:52Lahoreuto 00:52San Juanpon 15:52Anadyruto 07:52Detroit *pon 15:52Las Vegas *pon 12:52San Salvadorpon 13:52Anchorage *pon 11:52Dhakauto 01:52Limapon 14:52Santiagopon 15:52Ankarapon 22:52Dohapon 22:52Lisbon *pon 20:52Santo Domingopon 15:52Antananarivopon 22:52Dubaipon 23:52London *pon 20:52São Paulopon 16:52Asuncionpon 16:52Dublin *pon 20:52Los Angeles *pon 12:52Seattle *pon 12:52Athens *pon 22:52Edmonton *pon 13:52Madrid *pon 21:52Seouluto 04:52Atlanta *pon 15:52Frankfurt *pon 21:52Managuapon 13:52Shanghaiuto 03:52Aucklanduto 07:52Guatemala Citypon 13:52Manilauto 03:52Singaporeuto 03:52Baghdadpon 22:52Halifax *pon 16:52Melbourneuto 05:52Sofia *pon 22:52Bangkokuto 02:52Hanoiuto 02:52Mexico Citypon 13:52St. John's *pon 17:22Barcelona *pon 21:52Hararepon 21:52Miami *pon 15:52Stockholm *pon 21:52Beijinguto 03:52Havana *pon 15:52Minneapolis *pon 14:52Suvauto 07:52Beirut *pon 22:52Helsinki *pon 22:52Minskpon 22:52Sydneyuto 05:52Belgrade *pon 21:52Hong Konguto 03:52Montevideopon 16:52Taipeiuto 03:52Bengaluruuto 01:22Honolulupon 09:52Montréal *pon 15:52Tallinn *pon 22:52Berlin *pon 21:52Houston *pon 14:52Moscowpon 22:52Tashkentuto 00:52Bogotapon 14:52Indianapolis *pon 15:52Mumbaiuto 01:22Tegucigalpapon 13:52Boston *pon 15:52Islamabaduto 00:52Nairobipon 22:52Tehranpon 23:22Brasiliapon 16:52Istanbulpon 22:52Nassau *pon 15:52Tokyouto 04:52Brisbaneuto 05:52Jakartauto 02:52New Delhiuto 01:22Toronto *pon 15:52Brussels *pon 21:52Jerusalem *pon 22:52New Orleans *pon 14:52Vancouver *pon 12:52Bucharest *pon 22:52Johannesburgpon 21:52New York *pon 15:52Vienna *pon 21:52Budapest *pon 21:52Kabuluto 00:22Oslo *pon 21:52Warsaw *pon 21:52Buenos Airespon 16:52Karachiuto 00:52Ottawa *pon 15:52Washington DC *pon 15:52Cairo *pon 22:52Kathmanduuto 01:37Paris *pon 21:52Winnipeg *pon 14:52Calgary *pon 13:52Khartoumpon 21:52Perthuto 03:52Yangonuto 02:22Canberrauto 05:52Kingstonpon 14:52Philadelphia *pon 15:52Zagreb *pon 21:52Cape Townpon 21:52Kinshasapon 20:52Phoenixpon 12:52Zürich *pon 21:52Caracaspon 15:52Kiritimatiuto 09:52Prague *pon 21:52 * Adjusted for Daylight Saving Time (62 places).pon = ponedjeljak, 23 Jun 2025 (107 places).uto = utorak, 24 Jun 2025 (36 places).UTC (GMT/Zulu)-time: ponedjeljak, 23 Jun 2025, 19:52:34UTC is Coordinated Universal Time, GMT is Greenwich Mean Time.Great Britain/United Kingdom is one hour ahead of UTC during summer. Need some help?More InformationDaylight Saving TimeTime Zone AbbreviationsTime Zone NewsTime Tools OverviewRelated LinkTime API ServicesRelated Time Zone ToolsSearch for a City and Find Local TimePersonal World ClockTime Zone MapMeeting Planner – The best times for your meeting across time zonesEvent Time Announcer – Show local times worldwide for your event. How was your experience? Thank you for your feedback! Contact Us Love Our Site? Become a Supporter Browse our site advert free. Sun & Moon times precise to the second. Exclusive calendar templates for PDF Calendar. © Time and Date AS 1995–2025 Company About us Careers/Jobs Contact Us Contact Details Sitemap Newsletter Legal Link policy Advertising Disclaimer Terms & Conditions Privacy Policy Privacy Settings Services World Clock Time Zones Calendar Weather Sun & Moon Timers Calculators API Apps RSS Feeds Sites timeanddate.no timeanddate.de Follow Us © Time and Date AS 1995–2025. Privacy & Terms"
+              },
+              {
+                "time": "2025-06-23T19:52:35.643Z",
+                "timeMs": 30,
+                "cpu": 520,
+                "memoryMb": 2.7477264404296875,
+                "elementCount": 997,
+                "maxDepth": 14,
+                "attributeCount": 1228,
+                "_textContent": "123691245781011 Sarajevopon 21:52:35New Yorkpon 15:52:35Londonpon 20:52:35Tokyouto 04:52:35 Popular Lists: Africa | North America | South America | Asia | Australia/Pacific | Europe | Capitals Sort By: CityCountryTimeCities Shown: Capitals (215)Most Popular (143)Popular (357)Somewhat Popular (471)Extended ListAccrapon 19:52Casablanca *pon 20:52Kolkatauto 01:22Reykjavikpon 19:52Addis Ababapon 22:52Chicago *pon 14:52Kuala Lumpuruto 03:52Rio de Janeiropon 16:52Adelaideuto 05:22Copenhagen *pon 21:52Kuwait Citypon 22:52Riyadhpon 22:52Algierspon 20:52Dallas *pon 14:52Kyiv *pon 22:52Rome *pon 21:52Almatyuto 00:52Dar es Salaampon 22:52La Pazpon 15:52Salt Lake City *pon 13:52Ammanpon 22:52Darwinuto 05:22Lagospon 20:52San Francisco *pon 12:52Amsterdam *pon 21:52Denver *pon 13:52Lahoreuto 00:52San Juanpon 15:52Anadyruto 07:52Detroit *pon 15:52Las Vegas *pon 12:52San Salvadorpon 13:52Anchorage *pon 11:52Dhakauto 01:52Limapon 14:52Santiagopon 15:52Ankarapon 22:52Dohapon 22:52Lisbon *pon 20:52Santo Domingopon 15:52Antananarivopon 22:52Dubaipon 23:52London *pon 20:52São Paulopon 16:52Asuncionpon 16:52Dublin *pon 20:52Los Angeles *pon 12:52Seattle *pon 12:52Athens *pon 22:52Edmonton *pon 13:52Madrid *pon 21:52Seouluto 04:52Atlanta *pon 15:52Frankfurt *pon 21:52Managuapon 13:52Shanghaiuto 03:52Aucklanduto 07:52Guatemala Citypon 13:52Manilauto 03:52Singaporeuto 03:52Baghdadpon 22:52Halifax *pon 16:52Melbourneuto 05:52Sofia *pon 22:52Bangkokuto 02:52Hanoiuto 02:52Mexico Citypon 13:52St. John's *pon 17:22Barcelona *pon 21:52Hararepon 21:52Miami *pon 15:52Stockholm *pon 21:52Beijinguto 03:52Havana *pon 15:52Minneapolis *pon 14:52Suvauto 07:52Beirut *pon 22:52Helsinki *pon 22:52Minskpon 22:52Sydneyuto 05:52Belgrade *pon 21:52Hong Konguto 03:52Montevideopon 16:52Taipeiuto 03:52Bengaluruuto 01:22Honolulupon 09:52Montréal *pon 15:52Tallinn *pon 22:52Berlin *pon 21:52Houston *pon 14:52Moscowpon 22:52Tashkentuto 00:52Bogotapon 14:52Indianapolis *pon 15:52Mumbaiuto 01:22Tegucigalpapon 13:52Boston *pon 15:52Islamabaduto 00:52Nairobipon 22:52Tehranpon 23:22Brasiliapon 16:52Istanbulpon 22:52Nassau *pon 15:52Tokyouto 04:52Brisbaneuto 05:52Jakartauto 02:52New Delhiuto 01:22Toronto *pon 15:52Brussels *pon 21:52Jerusalem *pon 22:52New Orleans *pon 14:52Vancouver *pon 12:52Bucharest *pon 22:52Johannesburgpon 21:52New York *pon 15:52Vienna *pon 21:52Budapest *pon 21:52Kabuluto 00:22Oslo *pon 21:52Warsaw *pon 21:52Buenos Airespon 16:52Karachiuto 00:52Ottawa *pon 15:52Washington DC *pon 15:52Cairo *pon 22:52Kathmanduuto 01:37Paris *pon 21:52Winnipeg *pon 14:52Calgary *pon 13:52Khartoumpon 21:52Perthuto 03:52Yangonuto 02:22Canberrauto 05:52Kingstonpon 14:52Philadelphia *pon 15:52Zagreb *pon 21:52Cape Townpon 21:52Kinshasapon 20:52Phoenixpon 12:52Zürich *pon 21:52Caracaspon 15:52Kiritimatiuto 09:52Prague *pon 21:52 * Adjusted for Daylight Saving Time (62 places).pon = ponedjeljak, 23 Jun 2025 (107 places).uto = utorak, 24 Jun 2025 (36 places).UTC (GMT/Zulu)-time: ponedjeljak, 23 Jun 2025, 19:52:35UTC is Coordinated Universal Time, GMT is Greenwich Mean Time.Great Britain/United Kingdom is one hour ahead of UTC during summer. Need some help?More InformationDaylight Saving TimeTime Zone AbbreviationsTime Zone NewsTime Tools OverviewRelated LinkTime API ServicesRelated Time Zone ToolsSearch for a City and Find Local TimePersonal World ClockTime Zone MapMeeting Planner – The best times for your meeting across time zonesEvent Time Announcer – Show local times worldwide for your event. How was your experience? Thank you for your feedback! Contact Us Love Our Site? Become a Supporter Browse our site advert free. Sun & Moon times precise to the second. Exclusive calendar templates for PDF Calendar. © Time and Date AS 1995–2025 Company About us Careers/Jobs Contact Us Contact Details Sitemap Newsletter Legal Link policy Advertising Disclaimer Terms & Conditions Privacy Policy Privacy Settings Services World Clock Time Zones Calendar Weather Sun & Moon Timers Calculators API Apps RSS Feeds Sites timeanddate.no timeanddate.de Follow Us © Time and Date AS 1995–2025. Privacy & Terms"
+              },
+              {
+                "time": "2025-06-23T19:52:52.747Z",
+                "timeMs": 23,
+                "cpu": 65.21739130434783,
+                "memoryMb": 0.62030029296875,
+                "elementCount": 997,
+                "maxDepth": 14,
+                "attributeCount": 1228,
+                "_textContent": "123691245781011 Sarajevopon 21:52:53New Yorkpon 15:52:53Londonpon 20:52:53Tokyouto 04:52:53 Popular Lists: Africa | North America | South America | Asia | Australia/Pacific | Europe | Capitals Sort By: CityCountryTimeCities Shown: Capitals (215)Most Popular (143)Popular (357)Somewhat Popular (471)Extended ListAccrapon 19:52Casablanca *pon 20:52Kolkatauto 01:22Reykjavikpon 19:52Addis Ababapon 22:52Chicago *pon 14:52Kuala Lumpuruto 03:52Rio de Janeiropon 16:52Adelaideuto 05:22Copenhagen *pon 21:52Kuwait Citypon 22:52Riyadhpon 22:52Algierspon 20:52Dallas *pon 14:52Kyiv *pon 22:52Rome *pon 21:52Almatyuto 00:52Dar es Salaampon 22:52La Pazpon 15:52Salt Lake City *pon 13:52Ammanpon 22:52Darwinuto 05:22Lagospon 20:52San Francisco *pon 12:52Amsterdam *pon 21:52Denver *pon 13:52Lahoreuto 00:52San Juanpon 15:52Anadyruto 07:52Detroit *pon 15:52Las Vegas *pon 12:52San Salvadorpon 13:52Anchorage *pon 11:52Dhakauto 01:52Limapon 14:52Santiagopon 15:52Ankarapon 22:52Dohapon 22:52Lisbon *pon 20:52Santo Domingopon 15:52Antananarivopon 22:52Dubaipon 23:52London *pon 20:52São Paulopon 16:52Asuncionpon 16:52Dublin *pon 20:52Los Angeles *pon 12:52Seattle *pon 12:52Athens *pon 22:52Edmonton *pon 13:52Madrid *pon 21:52Seouluto 04:52Atlanta *pon 15:52Frankfurt *pon 21:52Managuapon 13:52Shanghaiuto 03:52Aucklanduto 07:52Guatemala Citypon 13:52Manilauto 03:52Singaporeuto 03:52Baghdadpon 22:52Halifax *pon 16:52Melbourneuto 05:52Sofia *pon 22:52Bangkokuto 02:52Hanoiuto 02:52Mexico Citypon 13:52St. John's *pon 17:22Barcelona *pon 21:52Hararepon 21:52Miami *pon 15:52Stockholm *pon 21:52Beijinguto 03:52Havana *pon 15:52Minneapolis *pon 14:52Suvauto 07:52Beirut *pon 22:52Helsinki *pon 22:52Minskpon 22:52Sydneyuto 05:52Belgrade *pon 21:52Hong Konguto 03:52Montevideopon 16:52Taipeiuto 03:52Bengaluruuto 01:22Honolulupon 09:52Montréal *pon 15:52Tallinn *pon 22:52Berlin *pon 21:52Houston *pon 14:52Moscowpon 22:52Tashkentuto 00:52Bogotapon 14:52Indianapolis *pon 15:52Mumbaiuto 01:22Tegucigalpapon 13:52Boston *pon 15:52Islamabaduto 00:52Nairobipon 22:52Tehranpon 23:22Brasiliapon 16:52Istanbulpon 22:52Nassau *pon 15:52Tokyouto 04:52Brisbaneuto 05:52Jakartauto 02:52New Delhiuto 01:22Toronto *pon 15:52Brussels *pon 21:52Jerusalem *pon 22:52New Orleans *pon 14:52Vancouver *pon 12:52Bucharest *pon 22:52Johannesburgpon 21:52New York *pon 15:52Vienna *pon 21:52Budapest *pon 21:52Kabuluto 00:22Oslo *pon 21:52Warsaw *pon 21:52Buenos Airespon 16:52Karachiuto 00:52Ottawa *pon 15:52Washington DC *pon 15:52Cairo *pon 22:52Kathmanduuto 01:37Paris *pon 21:52Winnipeg *pon 14:52Calgary *pon 13:52Khartoumpon 21:52Perthuto 03:52Yangonuto 02:22Canberrauto 05:52Kingstonpon 14:52Philadelphia *pon 15:52Zagreb *pon 21:52Cape Townpon 21:52Kinshasapon 20:52Phoenixpon 12:52Zürich *pon 21:52Caracaspon 15:52Kiritimatiuto 09:52Prague *pon 21:52 * Adjusted for Daylight Saving Time (62 places).pon = ponedjeljak, 23 Jun 2025 (107 places).uto = utorak, 24 Jun 2025 (36 places).UTC (GMT/Zulu)-time: ponedjeljak, 23 Jun 2025, 19:52:53UTC is Coordinated Universal Time, GMT is Greenwich Mean Time.Great Britain/United Kingdom is one hour ahead of UTC during summer. Need some help?More InformationDaylight Saving TimeTime Zone AbbreviationsTime Zone NewsTime Tools OverviewRelated LinkTime API ServicesRelated Time Zone ToolsSearch for a City and Find Local TimePersonal World ClockTime Zone MapMeeting Planner – The best times for your meeting across time zonesEvent Time Announcer – Show local times worldwide for your event. How was your experience? Thank you for your feedback! Contact Us Love Our Site? Become a Supporter Browse our site advert free. Sun & Moon times precise to the second. Exclusive calendar templates for PDF Calendar. © Time and Date AS 1995–2025 Company About us Careers/Jobs Contact Us Contact Details Sitemap Newsletter Legal Link policy Advertising Disclaimer Terms & Conditions Privacy Policy Privacy Settings Services World Clock Time Zones Calendar Weather Sun & Moon Timers Calculators API Apps RSS Feeds Sites timeanddate.no timeanddate.de Follow Us © Time and Date AS 1995–2025. Privacy & Terms"
+              },
+              {
+                "time": "2025-06-23T19:53:16.027Z",
+                "timeMs": 29,
+                "cpu": 268.9655172413793,
+                "memoryMb": 2.8437423706054688,
+                "elementCount": 997,
+                "maxDepth": 14,
+                "attributeCount": 1228,
+                "_textContent": "123691245781011 Sarajevopon 21:53:16New Yorkpon 15:53:16Londonpon 20:53:16Tokyouto 04:53:16 Popular Lists: Africa | North America | South America | Asia | Australia/Pacific | Europe | Capitals Sort By: CityCountryTimeCities Shown: Capitals (215)Most Popular (143)Popular (357)Somewhat Popular (471)Extended ListAccrapon 19:53Casablanca *pon 20:53Kolkatauto 01:23Reykjavikpon 19:53Addis Ababapon 22:53Chicago *pon 14:53Kuala Lumpuruto 03:53Rio de Janeiropon 16:53Adelaideuto 05:23Copenhagen *pon 21:53Kuwait Citypon 22:53Riyadhpon 22:53Algierspon 20:53Dallas *pon 14:53Kyiv *pon 22:53Rome *pon 21:53Almatyuto 00:53Dar es Salaampon 22:53La Pazpon 15:53Salt Lake City *pon 13:53Ammanpon 22:53Darwinuto 05:23Lagospon 20:53San Francisco *pon 12:53Amsterdam *pon 21:53Denver *pon 13:53Lahoreuto 00:53San Juanpon 15:53Anadyruto 07:53Detroit *pon 15:53Las Vegas *pon 12:53San Salvadorpon 13:53Anchorage *pon 11:53Dhakauto 01:53Limapon 14:53Santiagopon 15:53Ankarapon 22:53Dohapon 22:53Lisbon *pon 20:53Santo Domingopon 15:53Antananarivopon 22:53Dubaipon 23:53London *pon 20:53São Paulopon 16:53Asuncionpon 16:53Dublin *pon 20:53Los Angeles *pon 12:53Seattle *pon 12:53Athens *pon 22:53Edmonton *pon 13:53Madrid *pon 21:53Seouluto 04:53Atlanta *pon 15:53Frankfurt *pon 21:53Managuapon 13:53Shanghaiuto 03:53Aucklanduto 07:53Guatemala Citypon 13:53Manilauto 03:53Singaporeuto 03:53Baghdadpon 22:53Halifax *pon 16:53Melbourneuto 05:53Sofia *pon 22:53Bangkokuto 02:53Hanoiuto 02:53Mexico Citypon 13:53St. John's *pon 17:23Barcelona *pon 21:53Hararepon 21:53Miami *pon 15:53Stockholm *pon 21:53Beijinguto 03:53Havana *pon 15:53Minneapolis *pon 14:53Suvauto 07:53Beirut *pon 22:53Helsinki *pon 22:53Minskpon 22:53Sydneyuto 05:53Belgrade *pon 21:53Hong Konguto 03:53Montevideopon 16:53Taipeiuto 03:53Bengaluruuto 01:23Honolulupon 09:53Montréal *pon 15:53Tallinn *pon 22:53Berlin *pon 21:53Houston *pon 14:53Moscowpon 22:53Tashkentuto 00:53Bogotapon 14:53Indianapolis *pon 15:53Mumbaiuto 01:23Tegucigalpapon 13:53Boston *pon 15:53Islamabaduto 00:53Nairobipon 22:53Tehranpon 23:23Brasiliapon 16:53Istanbulpon 22:53Nassau *pon 15:53Tokyouto 04:53Brisbaneuto 05:53Jakartauto 02:53New Delhiuto 01:23Toronto *pon 15:53Brussels *pon 21:53Jerusalem *pon 22:53New Orleans *pon 14:53Vancouver *pon 12:53Bucharest *pon 22:53Johannesburgpon 21:53New York *pon 15:53Vienna *pon 21:53Budapest *pon 21:53Kabuluto 00:23Oslo *pon 21:53Warsaw *pon 21:53Buenos Airespon 16:53Karachiuto 00:53Ottawa *pon 15:53Washington DC *pon 15:53Cairo *pon 22:53Kathmanduuto 01:38Paris *pon 21:53Winnipeg *pon 14:53Calgary *pon 13:53Khartoumpon 21:53Perthuto 03:53Yangonuto 02:23Canberrauto 05:53Kingstonpon 14:53Philadelphia *pon 15:53Zagreb *pon 21:53Cape Townpon 21:53Kinshasapon 20:53Phoenixpon 12:53Zürich *pon 21:53Caracaspon 15:53Kiritimatiuto 09:53Prague *pon 21:53 * Adjusted for Daylight Saving Time (62 places).pon = ponedjeljak, 23 Jun 2025 (107 places).uto = utorak, 24 Jun 2025 (36 places).UTC (GMT/Zulu)-time: ponedjeljak, 23 Jun 2025, 19:53:16UTC is Coordinated Universal Time, GMT is Greenwich Mean Time.Great Britain/United Kingdom is one hour ahead of UTC during summer. Need some help?More InformationDaylight Saving TimeTime Zone AbbreviationsTime Zone NewsTime Tools OverviewRelated LinkTime API ServicesRelated Time Zone ToolsSearch for a City and Find Local TimePersonal World ClockTime Zone MapMeeting Planner – The best times for your meeting across time zonesEvent Time Announcer – Show local times worldwide for your event. How was your experience? Thank you for your feedback! Contact Us Love Our Site? Become a Supporter Browse our site advert free. Sun & Moon times precise to the second. Exclusive calendar templates for PDF Calendar. © Time and Date AS 1995–2025 Company About us Careers/Jobs Contact Us Contact Details Sitemap Newsletter Legal Link policy Advertising Disclaimer Terms & Conditions Privacy Policy Privacy Settings Services World Clock Time Zones Calendar Weather Sun & Moon Timers Calculators API Apps RSS Feeds Sites timeanddate.no timeanddate.de Follow Us © Time and Date AS 1995–2025. Privacy & Terms"
+              },
+              {
+                "time": "2025-06-23T19:53:16.891Z",
+                "timeMs": 21,
+                "cpu": 71.42857142857143,
+                "memoryMb": 3.1969146728515625,
+                "elementCount": 997,
+                "maxDepth": 14,
+                "attributeCount": 1228,
+                "_textContent": "123691245781011 Sarajevopon 21:53:17New Yorkpon 15:53:17Londonpon 20:53:17Tokyouto 04:53:17 Popular Lists: Africa | North America | South America | Asia | Australia/Pacific | Europe | Capitals Sort By: CityCountryTimeCities Shown: Capitals (215)Most Popular (143)Popular (357)Somewhat Popular (471)Extended ListAccrapon 19:53Casablanca *pon 20:53Kolkatauto 01:23Reykjavikpon 19:53Addis Ababapon 22:53Chicago *pon 14:53Kuala Lumpuruto 03:53Rio de Janeiropon 16:53Adelaideuto 05:23Copenhagen *pon 21:53Kuwait Citypon 22:53Riyadhpon 22:53Algierspon 20:53Dallas *pon 14:53Kyiv *pon 22:53Rome *pon 21:53Almatyuto 00:53Dar es Salaampon 22:53La Pazpon 15:53Salt Lake City *pon 13:53Ammanpon 22:53Darwinuto 05:23Lagospon 20:53San Francisco *pon 12:53Amsterdam *pon 21:53Denver *pon 13:53Lahoreuto 00:53San Juanpon 15:53Anadyruto 07:53Detroit *pon 15:53Las Vegas *pon 12:53San Salvadorpon 13:53Anchorage *pon 11:53Dhakauto 01:53Limapon 14:53Santiagopon 15:53Ankarapon 22:53Dohapon 22:53Lisbon *pon 20:53Santo Domingopon 15:53Antananarivopon 22:53Dubaipon 23:53London *pon 20:53São Paulopon 16:53Asuncionpon 16:53Dublin *pon 20:53Los Angeles *pon 12:53Seattle *pon 12:53Athens *pon 22:53Edmonton *pon 13:53Madrid *pon 21:53Seouluto 04:53Atlanta *pon 15:53Frankfurt *pon 21:53Managuapon 13:53Shanghaiuto 03:53Aucklanduto 07:53Guatemala Citypon 13:53Manilauto 03:53Singaporeuto 03:53Baghdadpon 22:53Halifax *pon 16:53Melbourneuto 05:53Sofia *pon 22:53Bangkokuto 02:53Hanoiuto 02:53Mexico Citypon 13:53St. John's *pon 17:23Barcelona *pon 21:53Hararepon 21:53Miami *pon 15:53Stockholm *pon 21:53Beijinguto 03:53Havana *pon 15:53Minneapolis *pon 14:53Suvauto 07:53Beirut *pon 22:53Helsinki *pon 22:53Minskpon 22:53Sydneyuto 05:53Belgrade *pon 21:53Hong Konguto 03:53Montevideopon 16:53Taipeiuto 03:53Bengaluruuto 01:23Honolulupon 09:53Montréal *pon 15:53Tallinn *pon 22:53Berlin *pon 21:53Houston *pon 14:53Moscowpon 22:53Tashkentuto 00:53Bogotapon 14:53Indianapolis *pon 15:53Mumbaiuto 01:23Tegucigalpapon 13:53Boston *pon 15:53Islamabaduto 00:53Nairobipon 22:53Tehranpon 23:23Brasiliapon 16:53Istanbulpon 22:53Nassau *pon 15:53Tokyouto 04:53Brisbaneuto 05:53Jakartauto 02:53New Delhiuto 01:23Toronto *pon 15:53Brussels *pon 21:53Jerusalem *pon 22:53New Orleans *pon 14:53Vancouver *pon 12:53Bucharest *pon 22:53Johannesburgpon 21:53New York *pon 15:53Vienna *pon 21:53Budapest *pon 21:53Kabuluto 00:23Oslo *pon 21:53Warsaw *pon 21:53Buenos Airespon 16:53Karachiuto 00:53Ottawa *pon 15:53Washington DC *pon 15:53Cairo *pon 22:53Kathmanduuto 01:38Paris *pon 21:53Winnipeg *pon 14:53Calgary *pon 13:53Khartoumpon 21:53Perthuto 03:53Yangonuto 02:23Canberrauto 05:53Kingstonpon 14:53Philadelphia *pon 15:53Zagreb *pon 21:53Cape Townpon 21:53Kinshasapon 20:53Phoenixpon 12:53Zürich *pon 21:53Caracaspon 15:53Kiritimatiuto 09:53Prague *pon 21:53 * Adjusted for Daylight Saving Time (62 places).pon = ponedjeljak, 23 Jun 2025 (107 places).uto = utorak, 24 Jun 2025 (36 places).UTC (GMT/Zulu)-time: ponedjeljak, 23 Jun 2025, 19:53:17UTC is Coordinated Universal Time, GMT is Greenwich Mean Time.Great Britain/United Kingdom is one hour ahead of UTC during summer. Need some help?More InformationDaylight Saving TimeTime Zone AbbreviationsTime Zone NewsTime Tools OverviewRelated LinkTime API ServicesRelated Time Zone ToolsSearch for a City and Find Local TimePersonal World ClockTime Zone MapMeeting Planner – The best times for your meeting across time zonesEvent Time Announcer – Show local times worldwide for your event. How was your experience? Thank you for your feedback! Contact Us Love Our Site? Become a Supporter Browse our site advert free. Sun & Moon times precise to the second. Exclusive calendar templates for PDF Calendar. © Time and Date AS 1995–2025 Company About us Careers/Jobs Contact Us Contact Details Sitemap Newsletter Legal Link policy Advertising Disclaimer Terms & Conditions Privacy Policy Privacy Settings Services World Clock Time Zones Calendar Weather Sun & Moon Timers Calculators API Apps RSS Feeds Sites timeanddate.no timeanddate.de Follow Us © Time and Date AS 1995–2025. Privacy & Terms"
+              }
+            ],
+            "totalTimeMs": 154,
+            "avgTimeMs": 30.8,
+            "totalCpu": 1294.2389309546907,
+            "avgCpu": 258.8477861909381,
+            "totalMemoryMb": 12.717048645019531,
+            "avgMemoryMb": 2.543409729003906
           }
         }
       }
