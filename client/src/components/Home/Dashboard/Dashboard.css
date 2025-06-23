@@ -155,3 +155,130 @@ th {
 .dashboard-container > *:nth-child(4) { animation-delay: 0.29s; }
 .dashboard-container > *:nth-child(5) { animation-delay: 0.37s; }
 .dashboard-container > *:nth-child(6) { animation-delay: 0.45s; }
+
+.send-report-btn {
+  position: relative;
+  display: inline-block;
+  padding: 14px 38px;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+  font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+  font-weight: 700;
+  color: #00fff7;
+  background: linear-gradient(90deg, #232526 0%, #0f2027 100%);
+  border: 2px solid #00fff7;
+  border-radius: 12px;
+  box-shadow: 0 0 16px #00fff7, 0 0 32px #0ff, 0 0 2px #fff inset;
+  letter-spacing: 2px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: 
+    background 0.3s,
+    color 0.3s,
+    box-shadow 0.2s,
+    transform 0.1s;
+}
+
+.send-report-btn::before {
+  content: "";
+  position: relative;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: linear-gradient(120deg, transparent 60%, #00fff7 100%);
+  opacity: 0.2;
+  transform: rotate(25deg);
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.send-report-btn:hover {
+  background: linear-gradient(90deg, #00fff7 0%, #232526 100%);
+  color: #232526;
+  box-shadow: 0 0 32px #00fff7, 0 0 64px #0ff, 0 0 8px #fff inset;
+  transform: translateY(-2px) scale(1.04);
+}
+
+.send-report-btn:active {
+  background: linear-gradient(90deg, #0ff 0%, #232526 100%);
+  color: #fff;
+  box-shadow: 0 0 8px #00fff7, 0 0 16px #0ff;
+  transform: translateY(1px) scale(0.98);
+}
+
+.send-report-btn::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 12px;
+  box-shadow: 0 0 24px 4px #00fff7 inset;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .send-report-btn {
+    width: 100%;
+    font-size: 1rem;
+    padding: 12px 0;
+  }
+}
+
+.send-report-btn-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.report-message {
+  margin-top: 18px;
+  font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #00fff7;
+  text-shadow: 0 0 8px #00fff7, 0 0 2px #fff;
+  background: rgba(20, 30, 40, 0.85);
+  border: 1.5px solid #00fff7;
+  border-radius: 8px;
+  padding: 10px 22px;
+  display: inline-block;
+  min-width: 180px;
+  box-shadow: 0 0 12px #00fff7 inset;
+  animation: reportFadeIn 0.5s;
+}
+
+@keyframes reportFadeIn {
+  from { opacity: 0; transform: translateY(10px);}
+  to   { opacity: 1; transform: translateY(0);}
+}
+
+/* Za status čekanja (možeš koristiti JS za dinamičku klasu) */
+.report-message.waiting {
+  color: #ffe600;
+  border-color: #ffe600;
+  text-shadow: 0 0 8px #ffe600, 0 0 2px #fff;
+  box-shadow: 0 0 12px #ffe600 inset;
+  background: rgba(40, 40, 10, 0.85);
+}
+
+/* Za grešku */
+.report-message.error {
+  color: #ff3c3c;
+  border-color: #ff3c3c;
+  text-shadow: 0 0 8px #ff3c3c, 0 0 2px #fff;
+  box-shadow: 0 0 12px #ff3c3c inset;
+  background: rgba(40, 10, 10, 0.85);
+}
+
+/* Za uspjeh */
+.report-message.success {
+  color: #00ff7a;
+  border-color: #00ff7a;
+  text-shadow: 0 0 8px #00ff7a, 0 0 2px #fff;
+  box-shadow: 0 0 12px #00ff7a inset;
+  background: rgba(10, 40, 20, 0.85);
+}

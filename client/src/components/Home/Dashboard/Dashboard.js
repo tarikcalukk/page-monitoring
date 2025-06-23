@@ -6,6 +6,7 @@ function Dashboard() {
   const [urls, setUrls] = useState([]);
   const [newUrl, setNewUrl] = useState("");
   const [isValidating, setIsValidating] = useState(false);
+  const [reportMsg, setReportMsg] = useState("");
   const userToken = localStorage.getItem("token");
 
   const fetchUrls = useCallback(async () => {
@@ -111,10 +112,29 @@ function Dashboard() {
         body: JSON.stringify({ url: urlObj.url, active: !urlObj.active }),
       });
       if (!response.ok) throw new Error("Failed to toggle active status");
-      fetchUrls();
+      await fetchUrls(); // <--- odmah osvježi prikaz
     } catch (err) {
       console.error("Error toggling active status:", err);
     }
+  };
+
+  const handleSendReport = async () => {
+    setReportMsg("Sending report...");
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/send-report`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
+      const data = await response.json();
+      if (response.ok) setReportMsg(data.msg || "Report sent!");
+      else setReportMsg(data.msg || "Failed to send report.");
+    } catch {
+      setReportMsg("Server error.");
+    }
+    setTimeout(() => setReportMsg(""), 4000);
   };
 
 return (
@@ -178,6 +198,24 @@ return (
             </tbody>
           </table>
         </div>
+      )}
+    </div>
+
+    <div className="send-report-btn-center">
+      <button className="send-report-btn" onClick={handleSendReport}>
+        Send Report
+      </button>
+      {reportMsg && (
+        <p
+          className={
+            "report-message" +
+            (reportMsg.toLowerCase().includes("sending") ? " waiting" : "") +
+            (reportMsg.toLowerCase().includes("error") ? " error" : "") +
+            (reportMsg.toLowerCase().includes("success") || reportMsg.toLowerCase().includes("sent") ? " success" : "")
+          }
+        >
+          {reportMsg}
+        </p>
       )}
     </div>
   </div>
