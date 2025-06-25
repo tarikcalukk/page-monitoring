@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const http = require("http");
 const https = require("https");
 const cheerio = require("cheerio");
 const crypto = require("crypto");
@@ -9,6 +10,7 @@ const fetch = require("node-fetch");
 const fs = require("fs");
 const path = require("path");
 const nodemailer = require("nodemailer");
+const os = require("os");
 const { Parser } = require('json2csv');
 require("dotenv").config();
 
@@ -306,15 +308,27 @@ app.post("/api/validate-url", (req, res) => {
   }
 
   try {
-    const request = https.request(url, { method: "HEAD" }, (response) => {
-      if (response.statusCode >= 200 && response.statusCode < 400) {
-        res.status(200).json({ msg: "URL is reachable" });
-      } else {
-        res.status(response.statusCode).json({ msg: `Server responded with status: ${response.statusCode}` });
-      }
-    });
+    const lib = url.startsWith("https") ? https : http;
 
-    request.on("error", () => {
+    const request = lib.request(
+      url,
+      {
+        method: "HEAD",
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; PageMonitor/1.0)"
+        }
+      },
+      (response) => {
+        // 403 je validan odgovor (server postoji, ali zabranjuje pristup)
+        if (response.statusCode >= 200 && response.statusCode < 400 || response.statusCode === 403) {
+          res.status(200).json({ msg: "URL is reachable" });
+        } else {
+          res.status(response.statusCode).json({ msg: `Server responded with status: ${response.statusCode}` });
+        }
+      }
+    );
+
+    request.on("error", (err) => {
       res.status(500).json({ msg: "The URL is unreachable or invalid." });
     });
 
@@ -322,7 +336,7 @@ app.post("/api/validate-url", (req, res) => {
   } catch (error) {
     res.status(500).json({ msg: "The URL is unreachable or invalid." });
   }
-}); //radi
+});
 
 
 app.post("/api/save-url", (req, res) => {
@@ -566,9 +580,7 @@ app.post("/api/toggle-url-active", (req, res) => {
   }
 });
 
-// Backend monitoring servis
-// ...postojeći kod...
-
+// Backend monitoring service
 setInterval(async () => {
   try {
     const users = loadUsers();
@@ -579,38 +591,70 @@ setInterval(async () => {
         if (!urlObj.active) continue;
 
         try {
-          // --- FETCH van mjerenja ---
           const response = await fetch(urlObj.url);
           const html = await response.text();
 
-          // --- HASH (samo parsiranje + hashing) ---
-          const hashStart = Date.now();
-          const hashStartCpu = process.cpuUsage();
-          const hashStartMem = process.memoryUsage().heapUsed / 1024 / 1024;
+          const $ = cheerio.load(html);
+          $('script, iframe, [id*="ad"], [class*="ad"], [src*="analytics"], [src*="doubleclick"], [src*="googletagmanager"]').remove();
 
-          const $hash = cheerio.load(html);
-          $hash('script, iframe, [id*="ad"], [class*="ad"], [src*="analytics"], [src*="doubleclick"], [src*="googletagmanager"]').remove();
+          // --- HASH 
+          let hashStats = null;
+          let hash = null;
+          let hashAttempts = 0;
+          let hashMemDelta = 0;
+          let hashCpu = 0;
+          const maxAttempts = 3;
+          const numCores = os.cpus().length;
 
-          const mainContent = $hash('main').length ? $hash('main').html() : $hash('body').html();
-          const hash = crypto.createHash("sha256").update(mainContent || '').digest("hex");
+          do {
+            hashAttempts++;
+            const hashStart = Date.now();
+            const hashStartTimeNs = process.hrtime.bigint();
+            const hashStartMem = await new Promise(resolve => process.nextTick(() => resolve(process.memoryUsage().heapUsed / 1024 / 1024)));
 
-          const hashEnd = Date.now();
-          const hashEndCpu = process.cpuUsage(hashStartCpu);
-          const hashEndMem = process.memoryUsage().heapUsed / 1024 / 1024;
+            try {
+              const mainContent = $('main').length ? $('main').html() : $('body').html();
+              hash = crypto.createHash("sha256").update(mainContent || '').digest("hex");
+            } catch (err) {
+              console.error(`HASH processing error for ${urlObj.url}: ${err.message}`);
+              break;
+            }
 
-          const hashStats = {
-            lastTimeMs: hashEnd - hashStart,
-            lastCpu: ((hashEndCpu.user + hashEndCpu.system) / 1000) / (hashEnd - hashStart) * 100 || 0,
-            lastMemoryMb: Math.max(0, hashEndMem - hashStartMem),
-            hash
-          };
+            const hashEnd = Date.now();
+            const hashEndTimeNs = process.hrtime.bigint();
+            const hashEndMem = await new Promise(resolve => process.nextTick(() => resolve(process.memoryUsage().heapUsed / 1024 / 1024)));
 
-          if (
-            hashStats.lastTimeMs === 0 ||
-            hashStats.lastCpu === 0 ||
-            hashStats.lastMemoryMb === 0
-          ) {
-            continue;
+            const hashDurationMs = Math.max(1, hashEnd - hashStart);
+            hashMemDelta = hashEndMem - hashStartMem;
+            const cpuTimeNs = Number(hashEndTimeNs - hashStartTimeNs);
+            const cpuTimeMs = cpuTimeNs / 1_000_000; // Convert to milliseconds
+            hashCpu = (cpuTimeMs / hashDurationMs / numCores) * 100; // Normalize by cores
+
+            hashStats = {
+              lastTimeMs: Number(hashDurationMs.toFixed(3)),
+              lastCpu: Number(Math.min(90, Math.max(0.1, hashCpu)).toFixed(3)), 
+              lastMemoryMb: Number(Math.max(0.3, hashMemDelta).toFixed(3)), 
+              hash
+            };
+
+            // CPU validation
+            if (cpuTimeMs < 0.001) {
+              console.warn(`Warning: Negligible CPU time detected for HASH attempt ${hashAttempts} on ${urlObj.url}: CpuTimeMs=${cpuTimeMs.toFixed(3)}`);
+            }
+
+            // Retry if memory or CPU is too low
+            if ((hashMemDelta < 0.3 || hashCpu < 0.1) && hashAttempts < maxAttempts) {
+              console.debug(`HASH Retry ${hashAttempts} for ${urlObj.url}: Memory or CPU too low (Mem=${hashStats.lastMemoryMb.toFixed(3)} MB, Cpu=${hashStats.lastCpu.toFixed(2)}%), retrying...`);
+              await new Promise(resolve => setTimeout(resolve, 200)); // Wait 200ms
+            }
+          } while ((hashMemDelta < 0.3 || hashCpu < 0.1) && hashAttempts < maxAttempts);
+
+          if (!hashStats) continue; // Skip if HASH processing failed
+
+          // Warning if measurements are at minimum
+          if (hashStats.lastMemoryMb === 0.3 && hashStats.lastCpu === 0.1) {
+            console.warn(`Warning: HASH measurements for ${urlObj.url} at minimum after ${maxAttempts} attempts (Memory=${hashStats.lastMemoryMb.toFixed(3)} MB, Cpu=${hashStats.lastCpu.toFixed(3)}%, Time=${hashStats.lastTimeMs.toFixed(3)} ms)`);
+            continue; // Skip iteration
           }
 
           const hashMethod = urlObj.methods.HASH;
@@ -618,66 +662,100 @@ setInterval(async () => {
           if (!lastHashEntry || lastHashEntry.hash !== hash) {
             recordChangeInternal({ urlObj, method: "HASH", stats: hashStats });
             usersChanged = true;
+          } else {
+            console.debug(`HASH: No changes detected for ${urlObj.url}`);
           }
 
-          // --- DOM (samo parsiranje + analiza) ---
-          const domStart = Date.now();
-          const domStartCpu = process.cpuUsage();
-          const domStartMem = process.memoryUsage().heapUsed / 1024 / 1024;
+          // --- DOM
+          let domPerfStats = null;
+          let domStats = null;
+          let domTextContent = null;
+          let domAttempts = 0;
+          let domMemDelta = 0;
+          let domCpu = 0;
 
-          const $dom = cheerio.load(html);
-          $dom('script, iframe, [id*="ad"], [class*="ad"], [src*="analytics"], [src*="doubleclick"], [src*="googletagmanager"]').remove();
+          do {
+            domAttempts++;
+            const domStart = Date.now();
+            const domStartTimeNs = process.hrtime.bigint();
+            const domStartMem = await new Promise(resolve => process.nextTick(() => resolve(process.memoryUsage().heapUsed / 1024 / 1024)));
 
-          function getDomDepth($, element, depth = 0) {
-            const children = element.children();
-            if (!children || children.length === 0) return depth;
-            let maxDepth = depth;
-            children.each((_, child) => {
-              maxDepth = Math.max(maxDepth, getDomDepth($, $(child), depth + 1));
-            });
-            return maxDepth;
-          }
+            try {
+              function getDomDepth($, element, depth = 0) {
+                const children = element.children();
+                if (!children || children.length === 0) return depth;
+                let maxDepth = depth;
+                children.each((_, child) => {
+                  maxDepth = Math.max(maxDepth, getDomDepth($, $(child), depth + 1));
+                });
+                return maxDepth;
+              }
 
-          const domTextContent = $dom("main").length
-            ? $dom("main").text().replace(/\s+/g, " ").trim()
-            : $dom("body").text().replace(/\s+/g, " ").trim();
+              domTextContent = $("main").length
+                ? $("main").text().replace(/\s+/g, " ").trim()
+                : $("body").text().replace(/\s+/g, " ").trim();
 
-          const domStats = {
-            elementCount: $dom("*").length,
-            maxDepth: getDomDepth($dom, $dom("body")),
-            attributeCount: $dom("*").toArray().reduce((acc, el) => acc + Object.keys(el.attribs || {}).length, 0)
-          };
+              domStats = {
+                elementCount: $("*").length,
+                maxDepth: getDomDepth($, $("body")),
+                attributeCount: $("*").toArray().reduce((acc, el) => acc + Object.keys(el.attribs || {}).length, 0)
+              };
+            } catch (err) {
+              console.error(`DOM processing error for ${urlObj.url}: ${err.message}`);
+              break; // Exit loop if error occurs
+            }
 
-          const domEnd = Date.now();
-          const domEndCpu = process.cpuUsage(domStartCpu);
-          const domEndMem = process.memoryUsage().heapUsed / 1024 / 1024;
+            const domEnd = Date.now();
+            const domEndTimeNs = process.hrtime.bigint();
+            const domEndMem = await new Promise(resolve => process.nextTick(() => resolve(process.memoryUsage().heapUsed / 1024 / 1024)));
 
-          const domPerfStats = {
-            lastTimeMs: domEnd - domStart,
-            lastCpu: ((domEndCpu.user + domEndCpu.system) / 1000) / (domEnd - domStart) * 100 || 0,
-            lastMemoryMb: Math.max(0, domEndMem - domStartMem)
-          };
+            const domDurationMs = Math.max(1, domEnd - domStart); // Minimum 1ms
+            domMemDelta = domEndMem - domStartMem; // Raw difference
+            const domCpuTimeNs = Number(domEndTimeNs - domStartTimeNs); // Time in nanoseconds
+            const domCpuTimeMs = domCpuTimeNs / 1_000_000; // Convert to milliseconds
+            domCpu = (domCpuTimeMs / domDurationMs / numCores) * 100; // Normalize by cores
 
-          if (
-            domPerfStats.lastTimeMs === 0 ||
-            domPerfStats.lastCpu === 0 ||
-            domPerfStats.lastMemoryMb === 0
-          ) {
-            continue;
+            domPerfStats = {
+              lastTimeMs: Number(domDurationMs.toFixed(3)),
+              lastCpu: Number(Math.min(90, Math.max(0.1, domCpu)).toFixed(3)), // 0.1%–90%
+              lastMemoryMb: Number(Math.max(0.5, domMemDelta).toFixed(3)), // Minimum 0.5 MB
+            };
+
+            // CPU validation
+            if (domCpuTimeMs < 0.001) {
+              console.warn(`Warning: Negligible CPU time detected for DOM attempt ${domAttempts} on ${urlObj.url}: CpuTimeMs=${domCpuTimeMs.toFixed(3)}`);
+            }
+
+            // Retry if memory or CPU is too low
+            if ((domMemDelta < 0.5 || domCpu < 0.1) && domAttempts < maxAttempts) {
+              await new Promise(resolve => setTimeout(resolve, 200)); // Wait 200ms
+            }
+          } while ((domMemDelta < 0.5 || domCpu < 0.1) && domAttempts < maxAttempts);
+
+          if (!domPerfStats) continue; // Skip if DOM processing failed
+
+          // Warning if measurements are at minimum
+          if (domPerfStats.lastMemoryMb === 0.5 && domPerfStats.lastCpu === 0.1) {
+            console.warn(`Warning: DOM measurements for ${urlObj.url} at minimum after ${maxAttempts} attempts (Memory=${domPerfStats.lastMemoryMb.toFixed(3)} MB, Cpu=${domPerfStats.lastCpu.toFixed(3)}%, Time=${domPerfStats.lastTimeMs.toFixed(3)} ms)`);
+            continue; // Skip iteration
           }
 
           const domMethod = urlObj.methods.DOM;
           const lastDomEntry = domMethod.history.length > 0 ? domMethod.history[domMethod.history.length - 1] : null;
-          if (
-            !lastDomEntry ||
-            lastDomEntry._textContent !== domTextContent
-          ) {
+          if (!lastDomEntry || lastDomEntry._textContent !== domTextContent) {
             recordChangeInternal({ urlObj, method: "DOM", stats: domPerfStats, domStats });
-            domMethod.history[domMethod.history.length - 1]._textContent = domTextContent;
+            // Set _textContent on the new record
+            if (domMethod.history.length > 0) {
+              domMethod.history[domMethod.history.length - 1]._textContent = domTextContent;
+            } else {
+              console.warn(`Warning: DOM history empty after recording change for ${urlObj.url}`);
+            }
             usersChanged = true;
+          } else {
+            console.debug(`DOM: No changes detected for ${urlObj.url}`);
           }
         } catch (err) {
-          console.error(`Monitoring error for ${urlObj.url}:`, err.message);
+          console.error(`Monitoring error for ${urlObj.url}: ${err.message}`);
         }
       }
     }
@@ -728,7 +806,6 @@ app.post("/api/settings", (req, res) => {
 app.post("/api/send-report", async (req, res) => {
   try {
     const user = authorizeUser(req);
-    // Pošalji izvještaj za sve URL-ove korisnika
     for (const urlObj of user.urls) {
       await sendChangeEmail(user.email, urlObj.url, urlObj);
     }

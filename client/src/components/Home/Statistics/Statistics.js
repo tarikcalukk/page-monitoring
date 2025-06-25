@@ -55,9 +55,11 @@ function LineChart({ data, color, title, yLabel, height = 220, width = 520 }) {
         <line x1="60" y1={height - 40} x2={width - 20} y2={height - 40} stroke="#bbb" strokeWidth="1" />
         {/* Y-labels */}
         {[0, 0.5, 1].map((p, i) => {
-          const yVal = Math.round((1 - p) * maxY);
+          const yVal = ((1 - p) * maxY);
           return (
-            <text key={i} x="15" y={30 + p * (height - 60)} fontSize="13" fill="#888">{yVal}</text>
+            <text key={i} x="15" y={30 + p * (height - 60)} fontSize="13" fill="#888">
+              {yVal.toFixed(2)}
+            </text>
           );
         })}
         {/* X-labels */}
@@ -100,7 +102,7 @@ function LineChart({ data, color, title, yLabel, height = 220, width = 520 }) {
               textAnchor="middle"
               style={{ pointerEvents: "none", userSelect: "none" }}
             >
-              {pt.value.toFixed(0)}
+              {pt.value.toFixed(2)}
             </text>
           </g>
         ))}
