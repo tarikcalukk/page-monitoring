@@ -6,11 +6,8 @@ const http = require("http");
 const https = require("https");
 const cheerio = require("cheerio");
 const crypto = require("crypto");
-const fetch = require("node-fetch"); 
-const fs = require("fs");
-const path = require("path");
+const fetch = require("node-fetch");
 const nodemailer = require("nodemailer");
-const os = require("os");
 const { Parser } = require('json2csv');
 require("dotenv").config();
 
@@ -18,12 +15,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const USERS_FILE = path.join(__dirname, "users.json");
+const { sequelize, User, Url, MethodMetric, MethodHistory } = require('./data/models');
+
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   console.error("JWT_SECRET is not defined in .env file");
   process.exit(1);
 }
+
+sequelize.sync({ alter: true })
+  .then(() => console.log("DB synced"))
+  .catch(err => console.error("DB sync error:", err));
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -113,84 +115,32 @@ async function sendChangeEmail(to, url, urlObj) {
   });
 }
 
-function loadUsers() {
-  if (fs.existsSync(USERS_FILE)) {
-    const raw = fs.readFileSync(USERS_FILE);
-    return JSON.parse(raw);
-  }
-  return [];
-}
-function saveUsers(data) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2));
-}
+async function authorizeUser(req) {
+  const auth = req.headers.authorization;
+  if (!auth) throw { status: 401, msg: "Unauthorized" };
 
-function authorizeUser(req) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    throw { status: 401, msg: "No token provided." };
-  }
+  const token = auth.split(" ")[1];
+  if (!token) throw { status: 401, msg: "Unauthorized" };
 
-  const token = authHeader.split(" ")[1];
+  let decoded;
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const users = loadUsers();
-    const user = users.find((u) => u.email === decoded.email);
-
-    if (!user) {
-      throw { status: 404, msg: "User not found." };
-    }
-
-    return user;
-  } catch (err) {
-    throw { status: 401, msg: "Invalid token." };
+    decoded = jwt.verify(token, JWT_SECRET);
+  } catch {
+    throw { status: 401, msg: "Invalid token" };
   }
+
+  if (!decoded.email) throw { status: 401, msg: "Unauthorized" };
+
+  // Dohvati korisnika i njegove URL-ove iz baze
+  const user = await User.findOne({
+    where: { email: decoded.email },
+    include: Url
+  });
+
+  if (!user) throw { status: 404, msg: "User not found" };
+
+  return user;
 }
-
-function recordChangeInternal({ urlObj, method, stats, domStats = null }) {
-  if (!urlObj.changes) urlObj.changes = { total: 0, lastDetectedMethod: null };
-  urlObj.changes.total += 1;
-  urlObj.changes.lastDetectedMethod = method;
-  urlObj.lastUpdated = new Date().toISOString();
-
-  if (method === "HASH") {
-    const hashMethod = urlObj.methods.HASH;
-    hashMethod.history.push({
-      time: urlObj.lastUpdated,
-      timeMs: stats.lastTimeMs,
-      cpu: stats.lastCpu,
-      memoryMb: stats.lastMemoryMb,
-      hash: stats.hash || ""
-    });
-    hashMethod.totalTimeMs += stats.lastTimeMs;
-    hashMethod.totalCpu += stats.lastCpu;
-    hashMethod.totalMemoryMb += stats.lastMemoryMb;
-    const entryCount = hashMethod.history.length;
-    hashMethod.avgTimeMs = hashMethod.totalTimeMs / entryCount;
-    hashMethod.avgCpu = hashMethod.totalCpu / entryCount;
-    hashMethod.avgMemoryMb = hashMethod.totalMemoryMb / entryCount;
-  } else if (method === "DOM") {
-    const domMethod = urlObj.methods.DOM;
-    domMethod.history.push({
-      time: urlObj.lastUpdated,
-      timeMs: stats.lastTimeMs,
-      cpu: stats.lastCpu,
-      memoryMb: stats.lastMemoryMb,
-      // ...samo statistike, BEZ textContent!
-      elementCount: domStats.elementCount,
-      maxDepth: domStats.maxDepth,
-      attributeCount: domStats.attributeCount
-    });
-    domMethod.totalTimeMs += stats.lastTimeMs;
-    domMethod.totalCpu += stats.lastCpu;
-    domMethod.totalMemoryMb += stats.lastMemoryMb;
-    const entryCount = domMethod.history.length;
-    domMethod.avgTimeMs = domMethod.totalTimeMs / entryCount;
-    domMethod.avgCpu = domMethod.totalCpu / entryCount;
-    domMethod.avgMemoryMb = domMethod.totalMemoryMb / entryCount;
-  }
-}
-
-let users = loadUsers();
 
 app.post("/api/register", async (req, res) => {
   const { email, password } = req.body;
@@ -208,36 +158,43 @@ app.post("/api/register", async (req, res) => {
     return res.status(400).json({ msg: "Password must be at least 8 characters long" });
   }
 
-  const existing = users.find((u) => u.email === email);
-  if (existing) {
-    return res.status(400).json({ msg: "User already exists" });
-  }
-
   try {
-    const hashed = await bcrypt.hash(password, 10);
+    const existing = await User.findOne({ where: { email } });
+    if (existing) {
+      return res.status(400).json({ msg: "User already exists" });
+    }
 
-    users.push({ email, password: hashed, urls: [] });
-    saveUsers(users);
+    const hashed = await bcrypt.hash(password, 10);
+    await User.create({ email, password: hashed });
 
     res.status(201).json({ msg: "User registered successfully" });
   } catch (err) {
-    console.error(err);
+    console.error("Register error:", err);
     res.status(500).json({ msg: "Server error" });
   }
-}); //radi
+});
 
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
-  const users = loadUsers();
-  const user = users.find(u => u.email === email);
-  if (!user) return res.status(400).json({ msg: "User not found" });
 
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) return res.status(400).json({ msg: "Wrong password" });
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(400).json({ msg: "User not found" });
+    }
 
-  const token = jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: "1h" });
-  res.json({ token });
-}); // radi
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) {
+      return res.status(400).json({ msg: "Wrong password" });
+    }
+
+    const token = jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: "1h" });
+    res.json({ token });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
 
 app.get('/api/verify', (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -253,7 +210,7 @@ app.get('/api/verify', (req, res) => {
 
     res.json({ isValid: true, user: decoded }); 
   });
-}); //radi
+});
 
 app.post("/api/change-password", async (req, res) => {
   const auth = req.headers.authorization;
@@ -262,43 +219,39 @@ app.post("/api/change-password", async (req, res) => {
   const token = auth.split(" ")[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const users = loadUsers();
-    const user = users.find((u) => u.email === decoded.email);
+    const user = await User.findOne({ where: { email: decoded.email } });
+
     if (!user) return res.status(404).json({ msg: "User not found" });
 
     const hashed = await bcrypt.hash(req.body.newPassword, 10);
     user.password = hashed;
-    saveUsers(users);
+    await user.save();
 
     res.json({ msg: "Password changed successfully" });
   } catch (err) {
     res.status(401).json({ msg: "Invalid token" });
   }
-}); //radi
+});
 
-app.delete("/api/delete-account", (req, res) => {
+app.delete("/api/delete-account", async (req, res) => {
   const auth = req.headers.authorization;
   if (!auth) return res.status(401).json({ msg: "Unauthorized" });
 
   const token = auth.split(" ")[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    let usersList = loadUsers();
-    const userIndex = usersList.findIndex((u) => u.email === decoded.email);
+    const user = await User.findOne({ where: { email: decoded.email } });
 
-    if (userIndex === -1) return res.status(404).json({ msg: "User not found" });
+    if (!user) return res.status(404).json({ msg: "User not found" });
 
-    usersList.splice(userIndex, 1);
-
-    users = usersList;
-    saveUsers(users);
+    await user.destroy();
 
     res.json({ msg: "Account deleted successfully" });
   } catch (err) {
     console.error("Error deleting account:", err);
     res.status(401).json({ msg: "Invalid token" });
   }
-}); // radi
+});
 
 app.post("/api/validate-url", (req, res) => {
   const { url } = req.body;
@@ -339,77 +292,63 @@ app.post("/api/validate-url", (req, res) => {
 });
 
 
-app.post("/api/save-url", (req, res) => {
+app.post("/api/save-url", async (req, res) => {
   try {
-    const user = authorizeUser(req);
+    const user = await authorizeUser(req);
     const { url } = req.body;
 
     if (!url) {
       return res.status(400).json({ msg: "URL is required." });
     }
 
-    // Provjera da li URL već postoji
-    const urlExists = user.urls.some(u => u.url === url);
-    if (urlExists) {
+    // Provjeri postoji li već URL za ovog korisnika
+    const userUrls = await user.getUrls(); // Sequelize metoda za dohvat povezanih URL-ova
+    if (userUrls.some(u => u.url === url)) {
       return res.status(400).json({ msg: "URL already exists." });
     }
 
-    // Kreiranje novog URL entryja sa default vrijednostima
-    const newUrlEntry = {
+    // Kreiraj novi URL i veži ga za korisnika
+    const newUrl = await Url.create({
       url,
       active: false,
-      changes: {
-        total: 0,
-        lastDetectedMethod: null
-      },
+      changesTotal: 0,
+      lastDetectedMethod: null,
       lastUpdated: null,
-      methods: {
-        HASH: {
-          history: [],
-          totalTimeMs: 0,
-          avgTimeMs: 0,
-          totalCpu: 0,
-          avgCpu: 0,
-          totalMemoryMb: 0,
-          avgMemoryMb: 0
-        },
-        DOM: {
-          history: [],
-          totalTimeMs: 0,
-          avgTimeMs: 0,
-          totalCpu: 0,
-          avgCpu: 0,
-          totalMemoryMb: 0,
-          avgMemoryMb: 0
-        }
-      }
-    };
+      userId: user.id // Veza na korisnika
+    });
 
-    user.urls.push(newUrlEntry);
-    
-    // Ažuriranje baze
-    const users = loadUsers();
-    const updatedUsers = users.map(u => u.email === user.email ? user : u);
-    saveUsers(updatedUsers);
-
-    res.json({ msg: "URL saved successfully.", url: newUrlEntry });
+    res.json({ msg: "URL saved successfully.", url: newUrl });
   } catch (err) {
     console.error("Error saving URL:", err);
     res.status(err.status || 500).json({ msg: err.msg || "Server error." });
   }
-}); //radi
+});
 
-app.get("/api/get-urls", (req, res) => {
+
+app.get("/api/get-urls", async (req, res) => {
   try {
-    const user = authorizeUser(req);
-    res.json(user.urls);
+    const userPayload = authorizeUser(req);
+
+    const user = await User.findOne({
+      where: { email: userPayload.email },
+      include: {
+        model: Url,
+        include: MethodMetric
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found." });
+    }
+
+    res.json(user.Urls); // Sequelize koristi plural
   } catch (err) {
-    res.status(err.status || 500).json({ 
+    res.status(err.status || 500).json({
       error: true,
       message: err.msg || "Došlo je do greške na serveru"
     });
   }
-}); //radi
+}); //NE RADI
 
 app.post("/api/fetch-content", async (req, res) => {
   const { url } = req.body;
@@ -459,119 +398,135 @@ app.post("/api/fetch-content", async (req, res) => {
   }
 }); //radi
 
-app.delete("/api/delete-url", (req, res) => {
+app.delete("/api/delete-url", async (req, res) => {
   try {
-    const user = authorizeUser(req);
+    const userPayload = authorizeUser(req);
     const { url } = req.body;
 
     if (!url) return res.status(400).json({ msg: "URL is required." });
 
-    user.urls = user.urls.filter((u) => u.url !== url);
+    const user = await User.findOne({ where: { email: userPayload.email } });
+    if (!user) return res.status(404).json({ msg: "User not found." });
 
-    const users = loadUsers();
-    const updatedUsers = users.map((u) => (u.email === user.email ? user : u));
-    saveUsers(updatedUsers);
+    const urlEntry = await Url.findOne({ where: { url, UserId: user.id } });
+    if (!urlEntry) return res.status(404).json({ msg: "URL not found." });
+
+    await urlEntry.destroy();
 
     res.json({ msg: "URL deleted successfully." });
   } catch (err) {
     console.error("Error deleting URL:", err);
     res.status(err.status || 500).json({ msg: err.msg || "Server error." });
   }
-}); //radi
+});
 
-app.get("/api/get-changes", (req, res) => {
+app.get("/api/get-changes", async (req, res) => {
   try {
-    const user = authorizeUser(req);
+    const userPayload = authorizeUser(req);
     const { url } = req.query;
 
     if (!url) return res.status(400).json({ msg: "URL is required." });
 
-    const urlObj = user.urls.find((u) => u.url === url);
-    const changeCount = urlObj && urlObj.changes ? urlObj.changes.total : 0;
-    const lastDetectedMethod = urlObj && urlObj.changes ? urlObj.changes.lastDetectedMethod : null;
+    const user = await User.findOne({ where: { email: userPayload.email } });
+    if (!user) return res.status(404).json({ msg: "User not found." });
 
-    res.json({ changes: changeCount, lastDetectedMethod });
+    const urlObj = await Url.findOne({ where: { url, UserId: user.id } });
+    if (!urlObj) return res.status(404).json({ msg: "URL not found." });
+
+    res.json({
+      changes: urlObj.changeCount,
+      lastDetectedMethod: urlObj.lastDetectedMethod
+    });
   } catch (err) {
     console.error("Error fetching changes:", err);
     res.status(err.status || 500).json({ msg: err.msg || "Server error." });
   }
-}); //radi
+});
 
-app.post("/api/increment-changes", (req, res) => {
+app.post("/api/increment-changes", async (req, res) => {
   try {
-    const user = authorizeUser(req);
+    const userPayload = authorizeUser(req);
     const { url, method, stats } = req.body;
 
     if (!url || !method || !stats) {
       return res.status(400).json({ msg: "URL, method, and stats are required." });
     }
 
-    const urlObj = user.urls.find((u) => u.url === url);
-    if (!urlObj) {
-      return res.status(404).json({ msg: "URL not found." });
+    const user = await User.findOne({ where: { email: userPayload.email } });
+    if (!user) return res.status(404).json({ msg: "User not found." });
+
+    const urlObj = await Url.findOne({ where: { url, UserId: user.id } });
+    if (!urlObj) return res.status(404).json({ msg: "URL not found." });
+
+    // update change counter
+    urlObj.changeCount = (urlObj.changeCount || 0) + 1;
+    urlObj.lastDetectedMethod = method;
+    await urlObj.save();
+
+    // update MethodMetric
+    const methodMetric = await MethodMetric.findOne({ where: { UrlId: urlObj.id, method } });
+    if (methodMetric) {
+      methodMetric.totalTimeMs += stats.time;
+      methodMetric.totalCpu += stats.cpu;
+      methodMetric.totalMemoryMb += stats.memory;
+      methodMetric.avgTimeMs = methodMetric.totalTimeMs / urlObj.changeCount;
+      methodMetric.avgCpu = methodMetric.totalCpu / urlObj.changeCount;
+      methodMetric.avgMemoryMb = methodMetric.totalMemoryMb / urlObj.changeCount;
+      await methodMetric.save();
     }
 
-    recordChangeInternal({ urlObj, method, stats });
-
-    const users = loadUsers();
-    const updatedUsers = users.map((u) => (u.email === user.email ? user : u));
-    saveUsers(updatedUsers);
-
-    res.json({ msg: "Change count incremented successfully.", changes: urlObj.changes.total });
+    res.json({ msg: "Change count incremented successfully.", changes: urlObj.changeCount });
   } catch (err) {
     console.error("Error incrementing changes:", err);
     res.status(err.status || 500).json({ msg: err.msg || "Server error." });
   }
-}); 
+});
 
-app.get("/api/get-change-history", (req, res) => {
+app.get("/api/get-change-history", async (req, res) => {
   try {
-    const user = authorizeUser(req);
+    const userPayload = authorizeUser(req);
     const { url, method } = req.query;
 
     if (!url || !method || (method !== "HASH" && method !== "DOM")) {
       return res.status(400).json({ msg: "URL and valid method (HASH or DOM) are required." });
     }
 
-    const urlObj = user.urls.find((u) => u.url === url);
-    if (!urlObj) {
-      return res.status(404).json({ msg: "URL not found." });
-    }
+    const user = await User.findOne({ where: { email: userPayload.email } });
+    if (!user) return res.status(404).json({ msg: "User not found." });
 
-    const history = urlObj.methods[method]?.history || [];
+    const urlObj = await Url.findOne({ where: { url, UserId: user.id } });
+    if (!urlObj) return res.status(404).json({ msg: "URL not found." });
 
-    // Vraćamo history bez hash-a (za DOM je već bez hash-a, za HASH ga uklanjamo)
-    const filteredHistory = history.map(entry => {
-      const { hash, ...rest } = entry;
-      return rest;
+    const historyEntries = await MethodHistory.findAll({
+      where: { UrlId: urlObj.id, method },
+      order: [['time', 'ASC']],
+      attributes: { exclude: ['hash'] } // izbaci hash iz rezultata
     });
 
-    res.json({ history: filteredHistory });
+    res.json({ history: historyEntries });
   } catch (err) {
     console.error("Error fetching change history:", err);
     res.status(err.status || 500).json({ msg: err.msg || "Server error." });
   }
-}); //radi
+});
 
-app.post("/api/toggle-url-active", (req, res) => {
+app.post("/api/toggle-url-active", async (req, res) => {
   try {
-    const user = authorizeUser(req);
+    const userPayload = authorizeUser(req);
     const { url, active } = req.body;
 
     if (!url || typeof active !== "boolean") {
       return res.status(400).json({ msg: "URL and active(boolean) are required." });
     }
 
-    const urlObj = user.urls.find(u => u.url === url);
-    if (!urlObj) {
-      return res.status(404).json({ msg: "URL not found." });
-    }
+    const user = await User.findOne({ where: { email: userPayload.email } });
+    if (!user) return res.status(404).json({ msg: "User not found." });
+
+    const urlObj = await Url.findOne({ where: { url, UserId: user.id } });
+    if (!urlObj) return res.status(404).json({ msg: "URL not found." });
 
     urlObj.active = active;
-
-    const users = loadUsers();
-    const updatedUsers = users.map(u => u.email === user.email ? user : u);
-    saveUsers(updatedUsers);
+    await urlObj.save();
 
     res.json({ msg: "URL active status updated.", url, active });
   } catch (err) {
@@ -583,15 +538,14 @@ app.post("/api/toggle-url-active", (req, res) => {
 // Backend monitoring service
 setInterval(async () => {
   try {
-    const users = loadUsers();
+    const users = await User.findAll({ include: [Url] });
     let usersChanged = false;
 
     for (const user of users) {
-      for (const urlObj of user.urls) {
+      for (const urlObj of user.Urls) {
         if (!urlObj.active) continue;
 
         try {
-          // Support for local/self-signed HTTPS (localhost, 127.0.0.1)
           let fetchOptions = {};
           if (
             urlObj.url.startsWith("https://localhost") ||
@@ -624,13 +578,11 @@ setInterval(async () => {
 
           let hashMemDelta = hashEndMem - hashStartMem;
           if (!isFinite(hashMemDelta) || hashMemDelta <= 0) {
-            // Osciliraj oko 0.4 MB ± 0.05
             hashMemDelta = 2.26 + (Math.random() - 0.5) * 0.1;
           }
 
           let rawHashCpu = ((hashEndCpu.user + hashEndCpu.system) / 1000) / hashDurationMs * 100;
           if (!isFinite(rawHashCpu) || rawHashCpu <= 0) {
-            // Osciliraj oko 3% ± 0.5%
             rawHashCpu = 176 + (Math.random() - 0.5) * 1;
           }
 
@@ -664,7 +616,6 @@ setInterval(async () => {
             ? $("main").text().replace(/\s+/g, " ").trim()
             : $("body").text().replace(/\s+/g, " ").trim();
 
-          // DOM structure fingerprint (tag+attrs+inline style)
           function getDomFingerprint($) {
             return $("*").toArray().map(el => {
               const tag = el.name || '';
@@ -675,7 +626,6 @@ setInterval(async () => {
           }
           const domFingerprint = crypto.createHash('md5').update(getDomFingerprint($)).digest('hex');
 
-          // DOM style fingerprint (all inline styles as string)
           function getStyleFingerprint($) {
             return $("*").toArray().map(el => ($(el).attr('style') || '').replace(/\s+/g, ' ').trim()).join('|');
           }
@@ -697,13 +647,11 @@ setInterval(async () => {
 
           let domMemDelta = domEndMem - domStartMem;
           if (!isFinite(domMemDelta) || domMemDelta <= 0) {
-            // Osciliraj oko 1.0 MB ± 0.05
             domMemDelta = 1.0 + (Math.random() - 0.5) * 0.1;
           }
 
           let rawDomCpu = ((domEndCpu.user + domEndCpu.system) / 1000) / domDurationMs * 100;
           if (!isFinite(rawDomCpu) || rawDomCpu <= 0) {
-            // Nema oscilacije ovdje po tvojoj uputi, samo koristi stvarnu vrijednost
             rawDomCpu = 3.5 + (Math.random() - 0.5) * 2;
           }
 
@@ -713,34 +661,68 @@ setInterval(async () => {
             lastMemoryMb: Number(domMemDelta.toFixed(3))
           };
 
-
           // --- CHANGE DETECTION ---
 
           // HASH
-          const hashMethod = urlObj.methods.HASH;
-          const lastHashEntry = hashMethod.history.length > 0 ? hashMethod.history[hashMethod.history.length - 1] : null;
+          // Dohvati posljednji zapis za HASH iz baze
+          const lastHashEntry = await MethodHistory.findOne({
+            where: { urlId: urlObj.id, method: "HASH" },
+            order: [['time', 'DESC']]
+          });
+
           if (!lastHashEntry || lastHashEntry.hash !== hash) {
-            recordChangeInternal({ urlObj, method: "HASH", stats: hashStats });
+            // Snimi novi zapis u MethodHistory
+            await MethodHistory.create({
+              urlId: urlObj.id,
+              method: "HASH",
+              time: new Date(),
+              timeMs: hashStats.lastTimeMs,
+              cpu: hashStats.lastCpu,
+              memoryMb: hashStats.lastMemoryMb,
+              hash: hashStats.hash
+            });
+
+            // Update urlObj changes
+            urlObj.changesTotal = (urlObj.changesTotal || 0) + 1;
+            urlObj.lastDetectedMethod = "HASH";
+            urlObj.lastUpdated = new Date();
+            await urlObj.save();
+
             usersChanged = true;
           }
 
           // DOM
-          const domMethod = urlObj.methods.DOM;
-          const lastDomEntry = domMethod.history.length > 0 ? domMethod.history[domMethod.history.length - 1] : null;
+          const lastDomEntry = await MethodHistory.findOne({
+            where: { urlId: urlObj.id, method: "DOM" },
+            order: [['time', 'DESC']]
+          });
+
           const textChanged = !lastDomEntry || lastDomEntry._textContent !== domTextContent;
           const structureChanged = !lastDomEntry || lastDomEntry.fingerprint !== domStats.fingerprint;
           const styleChanged = !lastDomEntry || lastDomEntry.styleFingerprint !== domStats.styleFingerprint;
 
           if (!lastDomEntry || textChanged || structureChanged || styleChanged) {
-            recordChangeInternal({ urlObj, method: "DOM", stats: domPerfStats, domStats });
-            if (domMethod.history.length > 0) {
-              const last = domMethod.history[domMethod.history.length - 1];
-              last._textContent = domTextContent;
-              last.fingerprint = domStats.fingerprint;
-              last.styleFingerprint = domStats.styleFingerprint;
-            }
+            const newDomEntry = await MethodHistory.create({
+              urlId: urlObj.id,
+              method: "DOM",
+              time: new Date(),
+              timeMs: domPerfStats.lastTimeMs,
+              cpu: domPerfStats.lastCpu,
+              memoryMb: domPerfStats.lastMemoryMb,
+              _textContent: domTextContent,
+              fingerprint: domStats.fingerprint,
+              styleFingerprint: domStats.styleFingerprint,
+            });
+
+            // Update urlObj changes
+            urlObj.changesTotal = (urlObj.changesTotal || 0) + 1;
+            urlObj.lastDetectedMethod = "DOM";
+            urlObj.lastUpdated = new Date();
+            await urlObj.save();
+
             usersChanged = true;
           }
+
         } catch (err) {
           console.error(`Monitoring error for ${urlObj.url}: ${err.message}`);
         }
@@ -748,7 +730,8 @@ setInterval(async () => {
     }
 
     if (usersChanged) {
-      saveUsers(users);
+      // Eventualno možeš ovdje dodatno nešto ako treba poslije promjena
+      console.log("Some URLs updated with new changes.");
     }
   } catch (err) {
     console.error("Monitoring service error:", err.message);
@@ -756,34 +739,41 @@ setInterval(async () => {
 }, 1000);
 
 
-app.get("/api/statistics", (req, res) => {
-  const users = loadUsers();
-  let dom = [], hash = [];
-  for (const user of users) {
-    for (const urlObj of user.urls || []) {
-      if (urlObj.methods?.DOM?.history) dom = dom.concat(urlObj.methods.DOM.history);
-      if (urlObj.methods?.HASH?.history) hash = hash.concat(urlObj.methods.HASH.history);
-    }
+app.get("/api/statistics", async (req, res) => {
+  try {
+    // Dohvati sve MethodHistory zapise iz baze, grupisane po metodi
+    const dom = await MethodHistory.findAll({ where: { method: "DOM" } });
+    const hash = await MethodHistory.findAll({ where: { method: "HASH" } });
+
+    res.json({ dom, hash });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error." });
   }
-  res.json({ dom, hash });
 });
 
-app.get("/api/settings", (req, res) => {
+
+app.get("/api/settings", async (req, res) => {
   try {
-    const user = authorizeUser(req);
+    const userPayload = authorizeUser(req);
+    const user = await User.findOne({ where: { email: userPayload.email } });
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
     res.json(user.settings || {});
   } catch (err) {
     res.status(err.status || 500).json({ msg: err.msg || "Server error." });
   }
 });
 
-app.post("/api/settings", (req, res) => {
+app.post("/api/settings", async (req, res) => {
   try {
-    const user = authorizeUser(req);
+    const userPayload = authorizeUser(req);
+    const user = await User.findOne({ where: { email: userPayload.email } });
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
     user.settings = req.body;
-    const users = loadUsers();
-    const updatedUsers = users.map(u => u.email === user.email ? user : u);
-    saveUsers(updatedUsers);
+    await user.save();
+
     res.json({ msg: "Settings saved." });
   } catch (err) {
     res.status(err.status || 500).json({ msg: err.msg || "Server error." });
@@ -792,12 +782,18 @@ app.post("/api/settings", (req, res) => {
 
 app.post("/api/send-report", async (req, res) => {
   try {
-    const user = authorizeUser(req);
-    for (const urlObj of user.urls) {
+    const userPayload = authorizeUser(req);
+    const user = await User.findOne({ where: { email: userPayload.email }, include: Url });
+
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    for (const urlObj of user.Urls) {
       await sendChangeEmail(user.email, urlObj.url, urlObj);
     }
+
     res.json({ msg: "Report sent to your email." });
   } catch (err) {
+    console.error(err);
     res.status(err.status || 500).json({ msg: err.msg || "Failed to send report." });
   }
 });

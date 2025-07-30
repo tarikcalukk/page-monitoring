@@ -1,1 +1,58 @@
-[]
+[
+  {
+    "email": "tarik@gmail.com",
+    "password": "$2b$10$xXUBjwBt9qmsf25zq0xL2ewMTejo6cHBfHF6nhAAjxvIumVo/l70O",
+    "urls": [
+      {
+        "url": "https://www.timeanddate.com/worldclock/",
+        "active": false,
+        "changes": {
+          "total": 100,
+          "lastDetectedMethod": "DOM"
+        },
+        "lastUpdated": "2025-07-16T08:04:46.328Z",
+        "methods": {
+          "HASH": {
+            "history": [
+              {
+                "time": "2025-07-16T08:04:46.328Z",
+                "timeMs": 10.422,
+                "cpu": 176.055,
+                "memoryMb": 4.121,
+                "hash": "84ca7db0d7dfaf4d2dde80d1eee9a702f3e040749319ce0b2b818bbf4065e080"
+              }
+            ],
+            "totalTimeMs": 773.127,
+            "avgTimeMs": 15.462539999999999,
+            "totalCpu": 8001.974,
+            "avgCpu": 160.03948,
+            "totalMemoryMb": 205.5190000000001,
+            "avgMemoryMb": 4.110380000000002
+          },
+          "DOM": {
+            "history": [
+              {
+                "time": "2025-07-16T08:04:46.328Z",
+                "timeMs": 22.957,
+                "cpu": 135.037,
+                "memoryMb": 7.295,
+                "elementCount": 997,
+                "maxDepth": 14,
+                "attributeCount": 1228,
+                "_textContent": "123691245781011 Sarajevosri 10:04:46New Yorksri 04:04:46Londonsri 09:04:46Tokyosri 17:04:46 Popular Lists: Africa | North America | South America | Asia | Australia/Pacific | Europe | Capitals Sort By: CityCountryTimeCities Shown: Capitals (215)Most Popular (143)Popular (357)Somewhat Popular (471)Extended ListAccrasri 08:04Casablanca *sri 09:04Kolkatasri 13:34Reykjaviksri 08:04Addis Ababasri 11:04Chicago *sri 03:04Kuala Lumpursri 16:04Rio de Janeirosri 05:04Adelaidesri 17:34Copenhagen *sri 10:04Kuwait Citysri 11:04Riyadhsri 11:04Algierssri 09:04Dallas *sri 03:04Kyiv *sri 11:04Rome *sri 10:04Almatysri 13:04Dar es Salaamsri 11:04La Pazsri 04:04Salt Lake City *sri 02:04Ammansri 11:04Darwinsri 17:34Lagossri 09:04San Francisco *sri 01:04Amsterdam *sri 10:04Denver *sri 02:04Lahoresri 13:04San Juansri 04:04Anadyrsri 20:04Detroit *sri 04:04Las Vegas *sri 01:04San Salvadorsri 02:04Anchorage *sri 00:04Dhakasri 14:04Limasri 03:04Santiagosri 04:04Ankarasri 11:04Dohasri 11:04Lisbon *sri 09:04Santo Domingosri 04:04Antananarivosri 11:04Dubaisri 12:04London *sri 09:04São Paulosri 05:04Asuncionsri 05:04Dublin *sri 09:04Los Angeles *sri 01:04Seattle *sri 01:04Athens *sri 11:04Edmonton *sri 02:04Madrid *sri 10:04Seoulsri 17:04Atlanta *sri 04:04Frankfurt *sri 10:04Managuasri 02:04Shanghaisri 16:04Aucklandsri 20:04Guatemala Citysri 02:04Manilasri 16:04Singaporesri 16:04Baghdadsri 11:04Halifax *sri 05:04Melbournesri 18:04Sofia *sri 11:04Bangkoksri 15:04Hanoisri 15:04Mexico Citysri 02:04St. John's *sri 05:34Barcelona *sri 10:04Hararesri 10:04Miami *sri 04:04Stockholm *sri 10:04Beijingsri 16:04Havana *sri 04:04Minneapolis *sri 03:04Suvasri 20:04Beirut *sri 11:04Helsinki *sri 11:04Minsksri 11:04Sydneysri 18:04Belgrade *sri 10:04Hong Kongsri 16:04Montevideosri 05:04Taipeisri 16:04Bengalurusri 13:34Honoluluuto 22:04Montréal *sri 04:04Tallinn *sri 11:04Berlin *sri 10:04Houston *sri 03:04Moscowsri 11:04Tashkentsri 13:04Bogotasri 03:04Indianapolis *sri 04:04Mumbaisri 13:34Tegucigalpasri 02:04Boston *sri 04:04Islamabadsri 13:04Nairobisri 11:04Tehransri 11:34Brasiliasri 05:04Istanbulsri 11:04Nassau *sri 04:04Tokyosri 17:04Brisbanesri 18:04Jakartasri 15:04New Delhisri 13:34Toronto *sri 04:04Brussels *sri 10:04Jerusalem *sri 11:04New Orleans *sri 03:04Vancouver *sri 01:04Bucharest *sri 11:04Johannesburgsri 10:04New York *sri 04:04Vienna *sri 10:04Budapest *sri 10:04Kabulsri 12:34Oslo *sri 10:04Warsaw *sri 10:04Buenos Airessri 05:04Karachisri 13:04Ottawa *sri 04:04Washington DC *sri 04:04Cairo *sri 11:04Kathmandusri 13:49Paris *sri 10:04Winnipeg *sri 03:04Calgary *sri 02:04Khartoumsri 10:04Perthsri 16:04Yangonsri 14:34Canberrasri 18:04Kingstonsri 03:04Philadelphia *sri 04:04Zagreb *sri 10:04Cape Townsri 10:04Kinshasasri 09:04Phoenixsri 01:04Zürich *sri 10:04Caracassri 04:04Kiritimatisri 22:04Prague *sri 10:04 * Adjusted for Daylight Saving Time (62 places).uto = utorak, 15 Juli 2025 (1 place).sri = srijeda, 16 Juli 2025 (142 places).UTC (GMT/Zulu)-time: srijeda, 16 Juli 2025, 08:04:46UTC is Coordinated Universal Time, GMT is Greenwich Mean Time.Great Britain/United Kingdom is one hour ahead of UTC during summer. Need some help?More InformationDaylight Saving TimeTime Zone AbbreviationsTime Zone NewsTime Tools OverviewRelated LinkTime API ServicesRelated Time Zone ToolsSearch for a City and Find Local TimePersonal World ClockTime Zone MapMeeting Planner – The best times for your meeting across time zonesEvent Time Announcer – Show local times worldwide for your event. How was your experience? Thank you for your feedback! Contact Us Love Our Site? Become a Supporter Browse our site advert free. Sun & Moon times precise to the second. Exclusive calendar templates for PDF Calendar. © Time and Date AS 1995–2025 Company About us Careers/Jobs Contact Us Contact Details Sitemap Newsletter Legal Link policy Advertising Disclaimer Terms & Conditions Privacy Policy Privacy Settings Services World Clock Time Zones Calendar Weather Sun & Moon Timers Calculators API Apps RSS Feeds Sites timeanddate.no timeanddate.de Follow Us © Time and Date AS 1995–2025. Privacy & Terms",
+                "fingerprint": "7cafa4429c19ca3426e79f6be1e130c2",
+                "styleFingerprint": "fff92f9ac6910068ecc9f961f636cc2e"
+              }
+            ],
+            "totalTimeMs": 1397.0159999999998,
+            "avgTimeMs": 27.940319999999996,
+            "totalCpu": 8055.638999999999,
+            "avgCpu": 161.11278,
+            "totalMemoryMb": 354.6200000000001,
+            "avgMemoryMb": 7.092400000000002
+          }
+        }
+      }
+    ]
+  }
+]
