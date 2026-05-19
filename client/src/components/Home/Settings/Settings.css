@@ -10,7 +10,7 @@ body {
   margin: 30px auto;
   padding: 30px 36px;
   background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
-  border-radius: 22px;
+  border-radius: 8px;
   box-shadow: 0 8px 40px #00c3ff22, 0 2px 8px #2325260a;
   display: flex;
   flex-direction: column;
@@ -51,10 +51,11 @@ body {
   text-shadow: 0 0 6px #7c3aed22;
 }
 
+.settings-container section,
 .settings-section {
   margin-bottom: 30px;
   background: linear-gradient(90deg, #f6fafd 0%, #e0eafc 100%);
-  border-radius: 14px;
+  border-radius: 8px;
   box-shadow: 0 2px 16px #00c3ff11;
   padding: 22px 24px 18px 24px;
   border: 1.5px solid #00c3ff22;
@@ -102,7 +103,7 @@ body {
   background: linear-gradient(90deg, #00c3ff 0%, #7c3aed 100%);
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 1.08em;
   font-weight: bold;
   cursor: pointer;
@@ -129,6 +130,7 @@ body {
     padding: 10px 2vw;
     border-radius: 12px;
   }
+  .settings-container section,
   .settings-section {
     padding: 10px 2vw;
     border-radius: 10px;
@@ -160,6 +162,7 @@ body {
     animation: fadeInSettingsBlock 0.5s;
     box-shadow: 0 8px 40px #00c3ff44, 0 2px 8px #23252622;
   }
+  .settings-container section,
   .settings-section {
     padding: 14px 4vw 10px 4vw;
     border-radius: 10px;
@@ -167,4 +170,24 @@ body {
   .settings-container h2 {
     font-size: 1.3rem;
   }
+}
+
+.settings-container .save-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+  transform: none;
+}
+
+.settings-message {
+  margin: 0;
+  color: #34495e;
+  font-weight: 700;
+}
+
+.settings-message.error {
+  color: #a93226;
+}
+
+.settings-message.success {
+  color: #1e8449;
 }

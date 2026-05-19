@@ -1,113 +1,87 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  FaBell,
+  FaChartBar,
+  FaClipboardList,
+  FaCog,
+  FaGlobe,
+  FaMoon,
+  FaSignOutAlt,
+  FaTachometerAlt,
+  FaUserCircle,
+} from "react-icons/fa";
 import "./Home.css";
 import Account from "./Account/Account";
-import Settings from "./Settings/Settings";
-import { FaUserCircle, FaCog, FaClipboardList, FaChartBar, FaTachometerAlt, FaSignOutAlt, FaBell, FaMoon, FaGlobe } from "react-icons/fa";
 import Dashboard from "./Dashboard/Dashboard";
 import Logs from "./Logs/Logs";
+import Settings from "./Settings/Settings";
 import Statistics from "./Statistics/Statistics";
+import { useAuth } from "../../contexts/AuthContext";
+import { useNotifications } from "../../hooks/useNotifications";
+import { useOutsideClick } from "../../hooks/useOutsideClick";
+
+const TABS = [
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    icon: FaTachometerAlt,
+    group: "primary",
+  },
+  {
+    id: "statistics",
+    label: "Statistics",
+    icon: FaChartBar,
+    group: "primary",
+  },
+  {
+    id: "logs",
+    label: "Logs",
+    icon: FaClipboardList,
+    group: "primary",
+  },
+  {
+    id: "account",
+    label: "Account",
+    icon: FaUserCircle,
+    group: "secondary",
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    icon: FaCog,
+    group: "secondary",
+  },
+];
 
 function Home() {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [darkMode, setDarkMode] = useState(false);
-
-  // --- NOTIFICATIONS STATE ---
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const notifBtnRef = useRef();
+  const notificationRef = useRef(null);
+  const { logout } = useAuth();
+  const { notifications, isLoading, refresh } = useNotifications(true);
 
-  // Fetch notifications (detections) for the user
-  const fetchNotifications = () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setNotifications([]);
-      return;
-    }
-    fetch(`${process.env.REACT_APP_API_URL}/api/get-urls`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(urls => {
-        const notifs = (urls || [])
-          .filter(u => u.changes && u.changes.total > 0)
-          .map(u => ({
-            url: u.url,
-            total: u.changes.total,
-            lastMethod: u.changes.lastDetectedMethod
-          }));
-        setNotifications(notifs);
-      })
-      .catch(() => setNotifications([]));
-  };
+  useOutsideClick(
+    notificationRef,
+    useCallback(() => setNotifOpen(false), []),
+    notifOpen,
+  );
 
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (notifOpen) fetchNotifications();
-  }, [notifOpen]);
-
-  // Close popup on outside click
-  useEffect(() => {
-    function handleClick(e) {
-      if (
-        notifBtnRef.current &&
-        !notifBtnRef.current.contains(e.target)
-      ) {
-        setNotifOpen(false);
-      }
-    }
-    if (notifOpen) {
-      document.addEventListener("mousedown", handleClick);
-    } else {
-      document.removeEventListener("mousedown", handleClick);
-    }
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [notifOpen]);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/");
-      return;
-    }
-
-    fetch(`${process.env.REACT_APP_API_URL}/api/verify`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data.isValid) {
-          localStorage.removeItem("token");
-          navigate("/");
-        }
-      })
-      .catch((err) => {
-        console.error("Verification error:", err);
-        localStorage.removeItem("token");
-        navigate("/");
-      });
-  }, [navigate]);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add("dark-mode");
-    } else {
-      document.body.classList.remove("dark-mode");
-    }
+    document.body.classList.toggle("dark-mode", darkMode);
+    return () => document.body.classList.remove("dark-mode");
   }, [darkMode]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
+    logout();
+  };
+
+  const handleToggleNotifications = () => {
+    setNotifOpen((current) => {
+      const next = !current;
+      if (next) refresh();
+      return next;
+    });
   };
 
   const renderTabContent = () => {
@@ -123,109 +97,137 @@ function Home() {
       case "statistics":
         return <Statistics />;
       default:
-        return <div>Select a tab</div>;
+        return <Dashboard />;
     }
   };
 
+  const renderTabs = (group) => (
+    <ul className={`${group}-tabs`} role="tablist" aria-label={`${group} navigation`}>
+      {TABS.filter((tab) => tab.group === group).map((tab) => {
+        const Icon = tab.icon;
+        const selected = activeTab === tab.id;
+        return (
+          <li key={tab.id}>
+            <button
+              type="button"
+              className={`nav-tab ${selected ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+              role="tab"
+              aria-selected={selected}
+              aria-controls="home-tab-panel"
+              title={tab.label}
+            >
+              <Icon aria-hidden="true" />
+              <span className="nav-tab-label">{tab.label}</span>
+              <span className="tooltip" role="tooltip">
+                {tab.label}
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+
   return (
-  <div className="home-container">
-    <div className="top-bar">
-      <span className="site-title">
-        <FaGlobe style={{ color: "#00c3ff", fontSize: "1.5em" }} />
-        Site Monitoring
-      </span>
-      <div className="topbar-icons" style={{ position: "relative" }}>
-        <button
-          className="topbar-icon-btn"
-          title="Notifications"
-          ref={notifBtnRef}
-          onClick={() => setNotifOpen((v) => !v)}
-          style={{ position: "relative" }}
-        >
-          <FaBell />
-          {notifications.length > 0 && (
-            <span style={{
-              position: "absolute",
-              top: "0.5em",
-              right: "0.5em",
-              background: "#ff7675",
-              color: "#fff",
-              borderRadius: "50%",
-              fontSize: "0.7em",
-              padding: "0.15em 0.45em",
-              fontWeight: "bold"
-            }}>
-              {notifications.length}
-            </span>
-          )}
-        </button>
-        {notifOpen && (
-          <div className="notif-popup">
-            <div className="notif-popup-title">
-              <span role="img" aria-label="bell">🔔</span> Detections
-            </div>
-            {notifications.length === 0 ? (
-              <div className="notif-empty">
-                <span role="img" aria-label="check">✅</span> No detections yet!
+    <div className="home-container">
+      <header className="top-bar">
+        <span className="site-title">
+          <FaGlobe className="site-title-icon" aria-hidden="true" />
+          Site Monitoring
+        </span>
+
+        <div className="topbar-icons">
+          <div className="notification-area" ref={notificationRef}>
+            <button
+              className="topbar-icon-btn"
+              type="button"
+              aria-label="Open detections"
+              aria-expanded={notifOpen}
+              aria-controls="notification-popup"
+              onClick={handleToggleNotifications}
+            >
+              <FaBell aria-hidden="true" />
+              {notifications.length > 0 && (
+                <span className="notification-badge">
+                  {notifications.length}
+                </span>
+              )}
+            </button>
+
+            {notifOpen && (
+              <div
+                className="notif-popup"
+                id="notification-popup"
+                role="dialog"
+                aria-label="Detected changes"
+              >
+                <div className="notif-popup-title">
+                  <span>Detections</span>
+                  <button
+                    type="button"
+                    className="notif-refresh-btn"
+                    onClick={refresh}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Refreshing" : "Refresh"}
+                  </button>
+                </div>
+                {notifications.length === 0 ? (
+                  <div className="notif-empty" role="status">
+                    No detections yet.
+                  </div>
+                ) : (
+                  <ul className="notif-list">
+                    {notifications.map((notification) => (
+                      <li key={notification.id}>
+                        <span className="notif-url">{notification.url}</span>
+                        <span className="notif-method">
+                          {notification.lastMethod}
+                        </span>
+                        <span className="notif-count">
+                          <b>{notification.total}</b> detections
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
-            ) : (
-              <ul className="notif-list">
-                {notifications.map((n, i) => (
-                  <li key={n.url + i}>
-                    <span className="notif-url">{n.url}</span>
-                    <span className="notif-count">
-                      <b>{n.total}</b> detections
-                    </span>
-                  </li>
-                ))}
-              </ul>
             )}
           </div>
-        )}
-        <button
-          className="topbar-icon-btn"
-          title="Dark mode"
-          onClick={() => setDarkMode((prev) => !prev)}
-          style={darkMode ? { background: "#232526", color: "#ffe066" } : {}}
-        >
-          <FaMoon />
-        </button>
+
+          <button
+            className={`topbar-icon-btn ${darkMode ? "is-active" : ""}`}
+            type="button"
+            aria-label="Toggle dark mode"
+            aria-pressed={darkMode}
+            onClick={() => setDarkMode((prev) => !prev)}
+          >
+            <FaMoon aria-hidden="true" />
+          </button>
+        </div>
+      </header>
+
+      <div className="main-content">
+        <nav className="sidebar" aria-label="Main navigation">
+          {renderTabs("primary")}
+          {renderTabs("secondary")}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="logout-button sidebar-logout"
+          >
+            <FaSignOutAlt aria-hidden="true" />
+            <span>Log Out</span>
+          </button>
+        </nav>
+
+        <main className="tab-content" id="home-tab-panel" role="tabpanel">
+          {renderTabContent()}
+        </main>
       </div>
     </div>
-    <div className="main-content">
-      <div className="sidebar">
-        <ul className="top-tabs">
-          <li onClick={() => setActiveTab("dashboard")}>
-            <FaTachometerAlt /> Dashboard
-            <span className="tooltip">Dashboard</span>
-          </li>
-          <li onClick={() => setActiveTab("statistics")}>
-            <FaChartBar /> Statistics
-            <span className="tooltip">Statistics</span>
-          </li>
-          <li onClick={() => setActiveTab("logs")}>
-            <FaClipboardList /> Logs
-            <span className="tooltip">Logs</span>
-          </li>
-        </ul>
-        <ul className="bottom-tabs">
-          <li onClick={() => setActiveTab("account")}>
-            <FaUserCircle /> Account
-            <span className="tooltip">Account review</span>
-          </li>
-          <li onClick={() => setActiveTab("settings")}>
-            <FaCog /> Settings
-            <span className="tooltip">Settings</span>
-          </li>
-        </ul>
-        <button onClick={handleLogout} className="logout-button sidebar-logout">
-          <FaSignOutAlt style={{ marginRight: 8 }} /> Log Out
-        </button>
-      </div>
-      <div className="tab-content">{renderTabContent()}</div>
-    </div>
-  </div>
-);
+  );
 }
 
 export default Home;

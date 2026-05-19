@@ -1,42 +1,62 @@
-import React, { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FaClipboardList } from "react-icons/fa";
 import "./Logs.css";
+import { apiService } from "../../../services/apiService";
+import { getFriendlyErrorMessage } from "../../../utils/errors";
+
+function formatNumber(value, digits = 2) {
+  const number = Number(value || 0);
+  return Number.isFinite(number) ? number.toFixed(digits) : "0";
+}
 
 function Logs() {
   const [logs, setLogs] = useState([]);
-  const userToken = localStorage.getItem("token");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchLogs = useCallback(async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const data = await apiService.getUrls();
+      setLogs(Array.isArray(data) ? data : data?.urls || []);
+    } catch (fetchError) {
+      setError(getFriendlyErrorMessage(fetchError));
+      setLogs([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/get-urls`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${userToken}`,
-          },
-        });
-        if (!response.ok) throw new Error("Failed to fetch URLs");
-        const data = await response.json();
-        setLogs(Array.isArray(data) ? data : data.urls || []);
-      } catch (err) {
-        console.error("Error fetching logs:", err);
-      }
-    };
     fetchLogs();
-  }, [userToken]);
+  }, [fetchLogs]);
 
   return (
     <div className="logs-container">
-      <h2><FaClipboardList /> DETECTION HISTORY</h2>
-      {logs.length === 0 ? (
+      <div className="logs-header">
+        <h2>
+          <FaClipboardList aria-hidden="true" /> DETECTION HISTORY
+        </h2>
+        <button type="button" className="logs-refresh-btn" onClick={fetchLogs}>
+          Refresh
+        </button>
+      </div>
+
+      {isLoading ? (
+        <p className="no-logs">Loading detections...</p>
+      ) : error ? (
+        <p className="logs-error" role="alert">
+          {error}
+        </p>
+      ) : logs.length === 0 ? (
         <p className="no-logs">No detections found.</p>
       ) : (
-        logs.map((urlObj, idx) => (
-          <div className="log-url-block" key={idx}>
+        logs.map((urlObj) => (
+          <section className="log-url-block" key={urlObj.url}>
             <h3>{urlObj.url}</h3>
-            {Object.entries(urlObj.methods).map(([method, methodObj]) => (
-              <div className="log-method-block" key={method}>
+            {Object.entries(urlObj.methods || {}).map(([method, methodObj]) => (
+              <div className="log-method-block" key={`${urlObj.url}-${method}`}>
                 <span className="method-label">{method}</span>
                 <div className="history-table-wrapper">
                   <table className="history-table">
@@ -49,12 +69,14 @@ function Logs() {
                       </tr>
                     </thead>
                     <tbody>
-                      {methodObj.history.map((entry, i) => (
-                        <tr key={i}>
+                      {(methodObj.history || []).map((entry) => (
+                        <tr key={`${method}-${entry.time}-${entry.hash || ""}`}>
                           <td>{new Date(entry.time).toLocaleString()}</td>
-                          <td>{entry.cpu ? entry.cpu.toFixed(2) : entry.lastCpu?.toFixed(2) || 0}</td>
-                          <td>{entry.timeMs || entry.lastTimeMs || 0}</td>
-                          <td>{entry.memoryMb ? entry.memoryMb.toFixed(3) : entry.lastMemoryMb?.toFixed(3) || 0}</td>
+                          <td>{formatNumber(entry.cpu ?? entry.lastCpu)}</td>
+                          <td>{formatNumber(entry.timeMs ?? entry.lastTimeMs)}</td>
+                          <td>
+                            {formatNumber(entry.memoryMb ?? entry.lastMemoryMb, 3)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -62,7 +84,7 @@ function Logs() {
                 </div>
               </div>
             ))}
-          </div>
+          </section>
         ))
       )}
     </div>

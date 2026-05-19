@@ -1,87 +1,82 @@
-body {
-  background-color: #f0f4f8;
-  font-family: 'Poppins', sans-serif;
-  margin: 0;
-  padding: 0;
-}
-
 .logs-container {
   max-width: 950px;
   margin: 36px auto;
-  padding: 36px 18px 32px 18px;
+  padding: 32px 18px;
   background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
-  border-radius: 22px;
-  box-shadow: 0 12px 48px #00c3ff18, 0 2px 8px #2325260a;
-  position: relative;
-  overflow: hidden;
+  border-radius: 8px;
+  box-shadow:
+    0 12px 48px rgba(0, 195, 255, 0.1),
+    0 2px 8px rgba(35, 37, 38, 0.04);
+}
+
+.logs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 30px;
 }
 
 .logs-container h2 {
-  font-size: 2.3rem;
-  font-weight: 800;
-  color: #232526;
-  margin-bottom: 36px;
-  text-align: center;
-  letter-spacing: 2px;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.7em;
-  background: linear-gradient(90deg, #00c3ff 0%, #232526 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #232526;
+  font-size: clamp(1.3rem, 3vw, 2.3rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.logs-refresh-btn {
+  border: 1px solid #9fb7d0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.62);
+  color: #34495e;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.logs-refresh-btn:hover,
+.logs-refresh-btn:focus-visible {
+  border-color: #00a1d6;
+  outline: none;
+}
+
+.no-logs,
+.logs-error {
+  text-align: center;
+  font-size: 1.05rem;
+  margin-top: 18px;
+  font-weight: 700;
 }
 
 .no-logs {
-  text-align: center;
-  color: #7f8c8d;
-  font-size: 1.18rem;
+  color: #657786;
   font-style: italic;
-  margin-top: 18px;
-  letter-spacing: 0.5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5em;
 }
-.no-logs::before {
-  content: "🕵️‍♂️";
-  font-size: 1.2em;
-  opacity: 0.7;
+
+.logs-error {
+  color: #a93226;
 }
 
 .log-url-block {
-  margin-bottom: 36px;
-  padding: 28px 24px 20px 24px;
+  margin-bottom: 28px;
+  padding: 24px;
   background: linear-gradient(90deg, #fafcff 60%, #e0eafc 100%);
-  border-radius: 16px;
-  box-shadow: 0 4px 18px #00c3ff11;
-  position: relative;
-  transition: box-shadow 0.18s, transform 0.13s;
-  border-left: 6px solid #00c3ff44;
-  animation: fadeInLogBlock 0.7s cubic-bezier(.4,2,.3,1);
-  animation-fill-mode: both;
-  opacity: 0;
-  animation-delay: var(--log-delay, 0s);
+  border-radius: 8px;
+  box-shadow: 0 4px 18px rgba(0, 195, 255, 0.07);
+  border-left: 6px solid rgba(0, 195, 255, 0.28);
+  animation: fadeInLogBlock 0.45s ease;
 }
 
 .log-url-block h3 {
-  margin-bottom: 16px;
-  color: #00c3ff;
-  font-size: 1.13rem;
-  word-break: break-all;
-  font-weight: 700;
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: 0.4em;
-}
-.log-url-block h3::before {
-  content: "🌐";
-  font-size: 1.1em;
-  margin-right: 0.2em;
-  opacity: 0.7;
+  margin: 0 0 16px;
+  color: #0077a5;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
 }
 
 .log-method-block {
@@ -92,25 +87,17 @@ body {
   display: inline-block;
   background: linear-gradient(90deg, #00c3ff 0%, #232526 100%);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
   padding: 5px 18px;
-  border-radius: 10px;
+  border-radius: 8px;
   margin-bottom: 12px;
-  margin-right: 12px;
-  font-size: 1.01rem;
-  letter-spacing: 1px;
-  box-shadow: 0 2px 8px #00c3ff22;
-  text-shadow: 0 1px 4px #23252622;
-  border: none;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
 }
 
 .history-table-wrapper {
   overflow-x: auto;
   margin-top: 10px;
-  animation: fadeInLogBlock 0.6s cubic-bezier(.4,2,.3,1);
-  animation-delay: 0.2s;
-  animation-fill-mode: both;
-  opacity: 0;
 }
 
 .history-table {
@@ -119,13 +106,14 @@ body {
   border-spacing: 0;
   margin-top: 10px;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 12px #00c3ff11;
-  font-family: 'Fira Mono', 'Consolas', 'Poppins', monospace, sans-serif;
+  box-shadow: 0 2px 12px rgba(0, 195, 255, 0.07);
+  font-family: "Fira Mono", Consolas, "Poppins", monospace, sans-serif;
 }
 
-.history-table th, .history-table td {
+.history-table th,
+.history-table td {
   padding: 14px 12px;
   text-align: center;
   border-bottom: 1px solid #e0e0e0;
@@ -135,17 +123,13 @@ body {
 .history-table th {
   background: linear-gradient(90deg, #e0eafc 0%, #cfdef3 100%);
   font-weight: 700;
-  color: #00c3ff;
-  letter-spacing: 1px;
-  border-bottom: 2px solid #00c3ff22;
-  text-shadow: 0 1px 4px #00c3ff22;
+  color: #0077a5;
 }
 
 .history-table td {
   background: #fff;
   color: #232526;
   font-weight: 500;
-  transition: background 0.18s;
 }
 
 .history-table tr:nth-child(even) td {
@@ -156,48 +140,35 @@ body {
   background: #e0eafc;
 }
 
-.hash-cell {
-  font-family: 'Fira Mono', 'Consolas', monospace;
-  font-size: 0.97rem;
-  word-break: break-all;
-  color: #2980b9;
+@keyframes fadeInLogBlock {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 700px) {
   .logs-container {
-    padding: 12px 2vw 10px 2vw;
+    padding: 14px 2vw;
     max-width: 99vw;
   }
-  .log-url-block {
-    padding: 14px 4vw 10px 4vw;
+
+  .logs-header {
+    align-items: stretch;
+    flex-direction: column;
   }
-  .history-table th, .history-table td {
+
+  .log-url-block {
+    padding: 14px 4vw;
+  }
+
+  .history-table th,
+  .history-table td {
     padding: 8px 4px;
     font-size: 13px;
   }
-  .logs-container h2 {
-    font-size: 1.3rem;
-  }
-}
-
-/* Animacija fade-in za dinamično učitavanje blokova */
-@keyframes fadeInLogBlock {
-  from {
-    opacity: 0;
-    transform: translateY(32px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Prikaži blok kad je mountan */
-.logs-container .log-url-block {
-  opacity: 1;
-}
-
-/* Fade-in za tablice unutar svakog bloka */
-.log-url-block .history-table-wrapper {
-  opacity: 1;
 }

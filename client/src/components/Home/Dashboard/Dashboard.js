@@ -1,225 +1,212 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FaTachometerAlt } from "react-icons/fa";
 import "./Dashboard.css";
+import { apiService } from "../../../services/apiService";
+import { usePolling } from "../../../hooks/usePolling";
+import { getFriendlyErrorMessage } from "../../../utils/errors";
+import { normalizeUrlInput } from "../../../utils/validation";
+
+const URL_REFRESH_INTERVAL_MS = 15000;
 
 function Dashboard() {
   const [urls, setUrls] = useState([]);
   const [newUrl, setNewUrl] = useState("");
   const [isValidating, setIsValidating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [message, setMessage] = useState(null);
   const [reportMsg, setReportMsg] = useState("");
-  const userToken = localStorage.getItem("token");
 
   const fetchUrls = useCallback(async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/get-urls`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userToken}`,
-        },
-      });
-
-      if (!response.ok) throw new Error("Failed to fetch URLs");
-
-      const data = await response.json();
-      setUrls(data);
-    } catch (err) {
-      console.error("Error fetching URLs:", err);
+      const data = await apiService.getUrls();
+      setUrls(Array.isArray(data) ? data : []);
+      setMessage(null);
+    } catch (error) {
+      setMessage({ type: "error", text: getFriendlyErrorMessage(error) });
+    } finally {
+      setIsLoading(false);
     }
-  }, [userToken]);
+  }, []);
+
+  const refreshNow = usePolling(fetchUrls, URL_REFRESH_INTERVAL_MS, true);
 
   useEffect(() => {
-    fetchUrls(); // inicijalno učitavanje
+    refreshNow();
+  }, [refreshNow]);
 
-    const interval = setInterval(() => {
-      fetchUrls();
-    }, 1000); // svakih 10 sekundi
+  const handleAddUrl = async (event) => {
+    event.preventDefault();
+    const urlToSave = normalizeUrlInput(newUrl);
+    setMessage(null);
 
-    return () => clearInterval(interval);
-}, [fetchUrls]);
-
-  const handleAddUrl = async () => {
-    if (!newUrl.trim()) {
-      alert("URL cannot be empty.");
+    if (!urlToSave) {
+      setMessage({ type: "error", text: "URL cannot be empty." });
       return;
     }
-    if (urls.some((url) => url.url === newUrl)) {
-      alert("This URL is already being tracked.");
+
+    if (urls.some((url) => url.url === urlToSave)) {
+      setMessage({ type: "error", text: "This URL is already being tracked." });
       return;
     }
+
     setIsValidating(true);
-
     try {
-      const validateResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/validate-url`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: newUrl }),
-      });
-
-      if (!validateResponse.ok) {
-        const validateData = await validateResponse.json();
-        alert(`Validation failed: ${validateData.msg}`);
-        setIsValidating(false);
-        return;
-      }
-
-      const saveResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/save-url`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userToken}`,
-        },
-        body: JSON.stringify({ url: newUrl, method: "HASH" }),
-      });
-
-      if (!saveResponse.ok) throw new Error("Failed to save URL");
-
+      await apiService.validateUrl(urlToSave);
+      await apiService.saveUrl(urlToSave);
       setNewUrl("");
-      fetchUrls();
-    } catch (err) {
-      console.error("Error saving URL:", err);
-    }
-    setIsValidating(false);
-  };
-
-  const handleRemoveUrl = async (index) => {
-    const urlToRemove = urls[index].url;
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/delete-url`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userToken}`,
-        },
-        body: JSON.stringify({ url: urlToRemove }),
-      });
-      if (!response.ok) throw new Error("Failed to delete URL");
-      fetchUrls();
-    } catch (err) {
-      console.error("Error deleting URL:", err);
+      setMessage({ type: "success", text: "URL saved successfully." });
+      await fetchUrls();
+    } catch (error) {
+      setMessage({ type: "error", text: getFriendlyErrorMessage(error) });
+    } finally {
+      setIsValidating(false);
     }
   };
 
-  const handleToggleActive = async (index) => {
-    const urlObj = urls[index];
+  const handleRemoveUrl = async (urlToRemove) => {
+    setMessage(null);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/toggle-url-active`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userToken}`,
-        },
-        body: JSON.stringify({ url: urlObj.url, active: !urlObj.active }),
-      });
-      if (!response.ok) throw new Error("Failed to toggle active status");
-      await fetchUrls(); // <--- odmah osvježi prikaz
-    } catch (err) {
-      console.error("Error toggling active status:", err);
+      await apiService.deleteUrl(urlToRemove);
+      setMessage({ type: "success", text: "URL removed successfully." });
+      await fetchUrls();
+    } catch (error) {
+      setMessage({ type: "error", text: getFriendlyErrorMessage(error) });
+    }
+  };
+
+  const handleToggleActive = async (urlObj) => {
+    setMessage(null);
+    try {
+      await apiService.toggleUrlActive(urlObj.url, !urlObj.active);
+      await fetchUrls();
+    } catch (error) {
+      setMessage({ type: "error", text: getFriendlyErrorMessage(error) });
     }
   };
 
   const handleSendReport = async () => {
     setReportMsg("Sending report...");
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/send-report`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userToken}`,
-        },
-      });
-      const data = await response.json();
-      if (response.ok) setReportMsg(data.msg || "Report sent!");
-      else setReportMsg(data.msg || "Failed to send report.");
-    } catch {
-      setReportMsg("Server error.");
+      const data = await apiService.sendReport();
+      setReportMsg(data?.msg || "Report sent.");
+    } catch (error) {
+      setReportMsg(getFriendlyErrorMessage(error));
     }
-    setTimeout(() => setReportMsg(""), 4000);
+    window.setTimeout(() => setReportMsg(""), 4000);
   };
 
-return (
-  <div className="dashboard-container">
-    <h2 className="dashboard-title"><FaTachometerAlt />  DASHBOARD</h2>
+  return (
+    <div className="dashboard-container">
+      <h2 className="dashboard-title">
+        <FaTachometerAlt aria-hidden="true" /> DASHBOARD
+      </h2>
 
-    <div className="card add-url-card">
-      <h3>Add URL to Track</h3>
-      <div className="input-group">
-        <input
-          type="text"
-          placeholder="Enter a valid URL"
-          value={newUrl}
-          onChange={(e) => setNewUrl(e.target.value)}
-          disabled={isValidating}
-        />
-        <button onClick={handleAddUrl} disabled={isValidating}>
-          {isValidating ? "Validating..." : "Add"}
+      <section className="card add-url-card" aria-labelledby="add-url-title">
+        <h3 id="add-url-title">Add URL to Track</h3>
+        <form className="input-group" onSubmit={handleAddUrl}>
+          <label className="sr-only" htmlFor="tracked-url">
+            URL to track
+          </label>
+          <input
+            id="tracked-url"
+            type="url"
+            placeholder="https://example.com"
+            value={newUrl}
+            onChange={(event) => setNewUrl(event.target.value)}
+            disabled={isValidating}
+          />
+          <button type="submit" disabled={isValidating}>
+            {isValidating ? "Validating..." : "Add"}
+          </button>
+        </form>
+        {message && (
+          <p className={`dashboard-message ${message.type}`} role="status">
+            {message.text}
+          </p>
+        )}
+      </section>
+
+      <section className="card url-list-card" aria-labelledby="tracked-urls-title">
+        <div className="card-header-row">
+          <h3 id="tracked-urls-title">Tracked URLs</h3>
+          <button type="button" className="ghost-btn" onClick={fetchUrls}>
+            Refresh
+          </button>
+        </div>
+
+        {isLoading ? (
+          <p className="empty-message">Loading URLs...</p>
+        ) : urls.length === 0 ? (
+          <p className="empty-message">No URLs are being tracked.</p>
+        ) : (
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>URL</th>
+                  <th>Status</th>
+                  <th>Changes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {urls.map((urlObj) => (
+                  <tr key={urlObj.url}>
+                    <td>{urlObj.url}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className={`status-btn ${
+                          urlObj.active ? "active" : "inactive"
+                        }`}
+                        onClick={() => handleToggleActive(urlObj)}
+                        aria-pressed={urlObj.active}
+                      >
+                        {urlObj.active ? "Active" : "Inactive"}
+                      </button>
+                    </td>
+                    <td>{urlObj.changes?.total ?? 0}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="remove-btn"
+                        onClick={() => handleRemoveUrl(urlObj.url)}
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <div className="send-report-btn-center">
+        <button
+          type="button"
+          className="send-report-btn"
+          onClick={handleSendReport}
+        >
+          Send Report
         </button>
+        {reportMsg && (
+          <p
+            className={
+              "report-message" +
+              (reportMsg.toLowerCase().includes("sending") ? " waiting" : "") +
+              (reportMsg.toLowerCase().includes("error") ? " error" : "") +
+              (reportMsg.toLowerCase().includes("sent") ? " success" : "")
+            }
+            role="status"
+          >
+            {reportMsg}
+          </p>
+        )}
       </div>
     </div>
-
-    <div className="card url-list-card">
-      <h3>Tracked URLs</h3>
-      {urls.length === 0 ? (
-        <p className="empty-message">No URLs are being tracked.</p>
-      ) : (
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>URL</th>
-                <th>Status</th>
-                <th>Changes</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {urls.map((urlObj, index) => (
-                <tr key={index}>
-                  <td>{urlObj.url}</td>
-                  <td>
-                    <button
-                      className={`status-btn ${urlObj.active ? "active" : "inactive"}`}
-                      onClick={() => handleToggleActive(index)}
-                    >
-                      {urlObj.active ? "Active" : "Inactive"}
-                    </button>
-                  </td>
-                  <td>{urlObj.changes?.total || 0}</td>
-                  <td>
-                    <button
-                      className="remove-btn"
-                      onClick={() => handleRemoveUrl(index)}
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-
-    <div className="send-report-btn-center">
-      <button className="send-report-btn" onClick={handleSendReport}>
-        Send Report
-      </button>
-      {reportMsg && (
-        <p
-          className={
-            "report-message" +
-            (reportMsg.toLowerCase().includes("sending") ? " waiting" : "") +
-            (reportMsg.toLowerCase().includes("error") ? " error" : "") +
-            (reportMsg.toLowerCase().includes("success") || reportMsg.toLowerCase().includes("sent") ? " success" : "")
-          }
-        >
-          {reportMsg}
-        </p>
-      )}
-    </div>
-  </div>
-);
+  );
 }
 
 export default Dashboard;
