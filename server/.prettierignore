@@ -1,0 +1,5 @@
+node_modules
+coverage
+users.json
+users.json.*.tmp
+users.json.*.bak
