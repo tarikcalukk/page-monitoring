@@ -1,73 +1,88 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import "./Auth.css";
-import logo from "../../assets/images/logo.jpg";
+import AuthForm from "./AuthForm";
+import { useAuth } from "../../contexts/AuthContext";
+import { getFriendlyErrorMessage } from "../../utils/errors";
+import { isValidEmail, normalizeEmail } from "../../utils/validation";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = location.state?.from?.pathname || "/home";
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    setErrorMessage("");
+  }, [email, password]);
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
     setErrorMessage("");
 
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    const normalizedEmail = normalizeEmail(email);
+    if (!isValidEmail(normalizedEmail)) {
+      setErrorMessage("Please enter a valid email address.");
+      return;
+    }
 
-    const data = await res.json();
+    if (!password) {
+      setErrorMessage("Password is required.");
+      return;
+    }
 
-    if (res.ok) {
-      localStorage.setItem("token", data.token);
-      navigate("/home");
-    } else {
-      setErrorMessage(data.msg || "Login failed");
+    setIsSubmitting(true);
+    try {
+      await login({ email: normalizedEmail, password });
+      navigate(redirectTo, { replace: true });
+    } catch (error) {
+      setErrorMessage(getFriendlyErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  if (isAuthenticated) return <Navigate to="/home" replace />;
+
   return (
-    <div className="background">
-      <div className="container">
-        <img src={logo} alt="Your Logo" className="applogo" />
-        <h2 className="title">Sign In</h2>
-
-        {errorMessage && (
-          <div className="error-message">{errorMessage}</div>
-        )}
-
-        <form onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setErrorMessage("");
-            }}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              setErrorMessage("");
-            }}
-            required
-          />
-          <button type="submit">LOGIN</button>
-        </form>
-        <p className="signup-link">
-          Don't have an account?{" "}
-          <span onClick={() => navigate("/register")}>Sign up</span>
+    <AuthForm
+      title="Sign In"
+      error={errorMessage}
+      onSubmit={handleLogin}
+      submitLabel="Login"
+      isSubmitting={isSubmitting}
+      footer={
+        <p className="auth-link">
+          Don't have an account? <Link to="/register">Sign up</Link>
         </p>
-      </div>
-    </div>
+      }
+    >
+      <label htmlFor="login-email">Email</label>
+      <input
+        id="login-email"
+        type="email"
+        autoComplete="email"
+        placeholder="name@example.com"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        required
+      />
+
+      <label htmlFor="login-password">Password</label>
+      <input
+        id="login-password"
+        type="password"
+        autoComplete="current-password"
+        placeholder="Your password"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+        required
+      />
+    </AuthForm>
   );
 }
 

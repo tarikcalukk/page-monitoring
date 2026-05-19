@@ -1,98 +1,157 @@
-.background {
-    background-image: url("../../assets/images/background.jpg");
-    background-size: cover;
-    background-position: center;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .container {
-    background-color: rgba(53, 39, 208, 0.92);
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(205, 193, 193, 0.2);
-    width: 400px;
-    text-align: center;
-  }
-  
-  .title {
-    color: white;
-    margin-bottom: 20px;
-  }
-  
-  .container form {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .container input {
-    margin-bottom: 15px;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-  }
-  
-  .container button {
-    padding: 10px;
-    font-size: 16px;
-    background-color: #007bfc;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  
-  .container button:hover {
-    background-color: #005fe0;
-  }
-  
-  .applogo {
-    width: 100px;
-    height: auto;
-    margin-bottom: 20px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  
-  .login-link {
-    margin-top: 15px;
-    font-size: 14px;
-    color: white;
-  }
-  
-  .login-link span {
-    color: #bec95c;
-    cursor: pointer;
+.auth-page {
+  min-height: 100dvh;
+  background-image: url("../../assets/images/background.jpg");
+  background-position: center;
+  background-size: cover;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.auth-card {
+  width: min(100%, 420px);
+  background-color: rgba(53, 39, 208, 0.92);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(18, 20, 35, 0.22);
+  padding: 36px;
+  text-align: left;
+  color: #ffffff;
+  box-sizing: border-box;
+}
+
+.auth-logo {
+  width: 92px;
+  height: auto;
+  display: block;
+  margin: 0 auto 18px;
+}
+
+.auth-title {
+  margin: 0 0 20px;
+  text-align: center;
+  color: #ffffff;
+  font-size: 1.65rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-form label {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.auth-form input {
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 1px solid #cfd7ff;
+  border-radius: 6px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.auth-form input:focus {
+  border-color: #9df2ff;
+  box-shadow: 0 0 0 3px rgba(157, 242, 255, 0.26);
+}
+
+.auth-form button {
+  min-height: 44px;
+  margin-top: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  background-color: #007bfc;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    opacity 0.2s;
+}
+
+.auth-form button:hover:not(:disabled) {
+  background-color: #005fe0;
+}
+
+.auth-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.auth-link {
+  margin: 18px 0 0;
+  font-size: 0.95rem;
+  color: #ffffff;
+  text-align: center;
+}
+
+.auth-link a {
+  color: #f4ff8a;
+  font-weight: 700;
+}
+
+.auth-message {
+  border-radius: 6px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.auth-message-error {
+  background: rgba(255, 255, 255, 0.14);
+  color: #9df2ff;
+}
+
+.auth-message-success {
+  background: rgba(255, 255, 255, 0.14);
+  color: #caffbf;
+}
+
+.password-checks {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 6px;
+  display: grid;
+  gap: 5px;
+}
+
+.password-check-item {
+  color: rgba(255, 255, 255, 0.84);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+}
+
+.password-check-item span {
+  width: 24px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #ffb3b3;
+}
+
+.password-check-item.valid,
+.password-check-item.valid span {
+  color: #caffbf;
+}
+
+@media (max-width: 520px) {
+  .auth-page {
+    padding: 18px;
   }
 
-  .signup-link {
-    margin-top: 15px;
-    font-size: 14px;
-    color: white;
+  .auth-card {
+    padding: 28px 22px;
   }
-  
-  .signup-link span {
-    color: #bec95c;
-    cursor: pointer;
+
+  .auth-logo {
+    width: 78px;
   }
-  
-  .password-checks {
-    list-style-type: none;
-    padding-left: 0;
-    margin-top: 5px;
-    margin-bottom: 10px;
-    text-align: left;
-  }
-  
-  .password-check-item {
-    color: white;
-  }
-  
-  .error-message {
-    color: rgb(157, 242, 255);
-    margin-bottom: 10px;
-  }
+}

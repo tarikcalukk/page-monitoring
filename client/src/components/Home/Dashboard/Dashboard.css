@@ -10,7 +10,7 @@ body {
   margin: 30px auto;
   padding: 30px;
   background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
-  border-radius: 16px;
+  border-radius: 8px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
 }
 
@@ -25,9 +25,28 @@ body {
 .card {
   background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
   padding: 25px;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
   margin-bottom: 30px;
+}
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .input-group {
@@ -62,8 +81,45 @@ body {
   transition: background 0.3s;
 }
 
-.input-group button:hover {
+.input-group button:hover:not(:disabled) {
   background-color: #2980b9;
+}
+
+.input-group button:disabled,
+.status-btn:disabled,
+.remove-btn:disabled,
+.send-report-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.ghost-btn {
+  border: 1px solid #9fb7d0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.55);
+  color: #34495e;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.ghost-btn:hover,
+.ghost-btn:focus-visible {
+  border-color: #3498db;
+  outline: none;
+}
+
+.dashboard-message {
+  margin: 14px 0 0;
+  font-weight: 700;
+}
+
+.dashboard-message.error {
+  color: #a93226;
+}
+
+.dashboard-message.success {
+  color: #1e8449;
 }
 
 .table-wrapper {
@@ -218,6 +274,31 @@ th {
 }
 
 @media (max-width: 600px) {
+  .dashboard-container {
+    width: 100%;
+    margin: 0;
+    padding: 18px 12px;
+    border-radius: 0;
+    box-sizing: border-box;
+  }
+
+  .dashboard-title {
+    font-size: 24px;
+  }
+
+  .card {
+    padding: 16px 12px;
+    border-radius: 10px;
+  }
+
+  .input-group {
+    flex-direction: column;
+  }
+
+  .input-group button {
+    width: 100%;
+  }
+
   .send-report-btn {
     width: 100%;
     font-size: 1rem;

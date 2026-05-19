@@ -3,7 +3,7 @@
   margin: 30px auto;
   padding: 30px 36px;
   background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
-  border-radius: 22px;
+  border-radius: 8px;
   box-shadow: 0 8px 40px #00c3ff22, 0 2px 8px #2325260a;
   display: flex;
   flex-direction: column;
@@ -15,7 +15,7 @@
   overflow: hidden;
 }
 
-h2 {
+.account-container h2 {
   font-size: 2.2rem;
   font-weight: 900;
   color: #00c3ff;
@@ -34,7 +34,7 @@ h2 {
   font-family: 'Orbitron', 'Poppins', sans-serif;
 }
 
-h3 {
+.account-container h3 {
   font-size: 1.25rem;
   color: #7c3aed;
   margin-bottom: 10px;
@@ -94,9 +94,15 @@ h3 {
 
 .password-inputs {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 10px;
   width: 90%;
   justify-content: center;
+}
+
+.password-inputs label {
+  color: #232526;
+  font-weight: 700;
 }
 
 .password-inputs input {
@@ -138,6 +144,13 @@ h3 {
   transform: scale(1.04);
 }
 
+.password-form button[type="submit"]:disabled,
+.delete-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+  transform: none;
+}
+
 .password-checks {
   list-style: none;
   padding: 0;
@@ -171,6 +184,14 @@ h3 {
   text-align: center;
   font-size: 1.08em;
   letter-spacing: 0.5px;
+}
+
+.message.error {
+  color: #a93226;
+}
+
+.message.success {
+  color: #27ae60;
 }
 
 .delete-button {
