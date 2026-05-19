@@ -26,7 +26,7 @@ async function writeUsers(users) {
   await fs.mkdir(path.dirname(config.dataFile), { recursive: true });
   const tempFile = `${config.dataFile}.${process.pid}.${Date.now()}.tmp`;
   await fs.writeFile(tempFile, `${JSON.stringify(users, null, 2)}\n`, "utf8");
-  await fs.rename(tempFile, config.dataFile);
+  await replaceDataFile(tempFile);
 }
 
 async function updateUsers(mutator) {
@@ -39,6 +39,45 @@ async function updateUsers(mutator) {
 
   dataQueue = operation.catch(() => {});
   return operation;
+}
+
+function isRetriableReplaceError(err) {
+  return ["EPERM", "EACCES", "EEXIST"].includes(err.code);
+}
+
+function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+async function replaceDataFile(tempFile) {
+  let lastError;
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      await fs.rename(tempFile, config.dataFile);
+      return;
+    } catch (err) {
+      lastError = err;
+      if (!isRetriableReplaceError(err)) throw err;
+      await wait(50 * (attempt + 1));
+    }
+  }
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      await fs.rm(config.dataFile, { force: true });
+      await fs.rename(tempFile, config.dataFile);
+      return;
+    } catch (err) {
+      lastError = err;
+      if (!isRetriableReplaceError(err)) throw err;
+      await wait(75 * (attempt + 1));
+    }
+  }
+
+  throw lastError;
 }
 
 function findUser(users, email) {
