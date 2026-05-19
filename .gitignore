@@ -11,11 +11,17 @@ server/node_modules
 
 # production
 /build
+client/build
 
 # misc
 client/.env
 server/.env
+.codex/
 .DS_Store
+*.log
+server/users.json
+server/users.json.*.tmp
+server/users.json.*.bak
 .env.local
 .env.development.local
 .env.test.local
