@@ -295,7 +295,7 @@ describe("protected URL and settings endpoints", () => {
       .expect((response) => {
         expect(response.body.sent).toBe(true);
         expect(response.body.deliveryMode).toBe("memory");
-        expect(response.body.msg).toBe("Report sent to your email.");
+        expect(response.body.msg).toBe("Izvještaj je poslan na vaš e-mail.");
       });
 
     const [report] = mailService.getOutbox();

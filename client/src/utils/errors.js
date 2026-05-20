@@ -9,5 +9,5 @@ export class ApiError extends Error {
 
 export function getFriendlyErrorMessage(error) {
   if (error instanceof ApiError) return error.message;
-  return "Something went wrong. Please try again.";
+  return "Došlo je do greške. Pokušajte ponovo.";
 }

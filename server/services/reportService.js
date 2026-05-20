@@ -48,7 +48,7 @@ async function sendReportEmail(user) {
   ) {
     return {
       sent: false,
-      msg: "Email is not configured on the server, but report data is available for CSV export.",
+      msg: "E-mail nije konfigurisan na serveru, ali podaci izvještaja su dostupni kroz CSV izvoz.",
     };
   }
 
@@ -79,8 +79,8 @@ async function sendReportEmail(user) {
     deliveryMode: delivery.mode,
     msg:
       delivery.mode === "mailpit"
-        ? "Report sent to the local Mailpit inbox. Open http://localhost:8025 to view it."
-        : "Report sent to your email.",
+        ? "Izvještaj je poslan u lokalni Mailpit inbox. Otvorite http://localhost:8025 za pregled."
+        : "Izvještaj je poslan na vaš e-mail.",
   };
 }
 

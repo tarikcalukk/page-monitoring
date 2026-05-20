@@ -30,14 +30,14 @@ function VerifyEmail() {
     setMessage(null);
 
     if (!isValidEmail(normalizedEmail)) {
-      setMessage({ type: "error", text: "Please enter a valid email address." });
+      setMessage({ type: "error", text: "Unesite ispravnu e-mail adresu." });
       return;
     }
 
     if (!/^\d{6}$/.test(code.trim())) {
       setMessage({
         type: "error",
-        text: "Verification code must contain 6 digits.",
+        text: "Verifikacijski kod mora imati 6 cifara.",
       });
       return;
     }
@@ -60,7 +60,7 @@ function VerifyEmail() {
     if (!isValidEmail(normalizedEmail)) {
       setMessage({
         type: "error",
-        text: "Enter the account email before requesting a new code.",
+        text: "Unesite e-mail računa prije slanja novog koda.",
       });
       return;
     }
@@ -71,8 +71,8 @@ function VerifyEmail() {
       setMessage({
         type: "success",
         text: response?.devVerificationCode
-          ? `New code sent. Development code: ${response.devVerificationCode}`
-          : "New verification code sent.",
+          ? `Novi kod je poslan. Razvojni kod: ${response.devVerificationCode}`
+          : "Novi verifikacijski kod je poslan.",
       });
     } catch (error) {
       setMessage({ type: "error", text: getFriendlyErrorMessage(error) });
@@ -85,11 +85,11 @@ function VerifyEmail() {
 
   return (
     <AuthForm
-      title="Verify Email"
+      title="Verifikacija e-maila"
       error={message?.type === "error" ? message.text : ""}
       success={message?.type === "success" ? message.text : ""}
       onSubmit={handleVerify}
-      submitLabel="Verify"
+      submitLabel="Potvrdi"
       isSubmitting={isSubmitting}
       footer={
         <div className="auth-link verification-actions">
@@ -99,35 +99,35 @@ function VerifyEmail() {
             onClick={handleResend}
             disabled={isResending}
           >
-            {isResending ? "Sending..." : "Send new code"}
+            {isResending ? "Slanje..." : "Pošalji novi kod"}
           </button>
           <span>
-            Already verified? <Link to="/">Log in</Link>
+            Već ste potvrdili e-mail? <Link to="/">Prijavite se</Link>
           </span>
         </div>
       }
     >
       <p className="auth-helper">
-        Enter the 6-digit code sent to your email address.
+        Unesite 6-cifreni kod poslan na vašu e-mail adresu.
       </p>
       {location.state?.devVerificationCode && (
         <p className="auth-dev-code" role="status">
-          Development code: {location.state.devVerificationCode}
+          Razvojni kod: {location.state.devVerificationCode}
         </p>
       )}
 
-      <label htmlFor="verify-email">Email</label>
+      <label htmlFor="verify-email">E-mail</label>
       <input
         id="verify-email"
         type="email"
         autoComplete="email"
-        placeholder="name@example.com"
+        placeholder="ime@example.com"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
         required
       />
 
-      <label htmlFor="verify-code">Verification code</label>
+      <label htmlFor="verify-code">Verifikacijski kod</label>
       <input
         id="verify-code"
         type="text"

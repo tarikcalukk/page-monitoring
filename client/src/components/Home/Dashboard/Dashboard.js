@@ -40,12 +40,12 @@ function Dashboard() {
     setMessage(null);
 
     if (!urlToSave) {
-      setMessage({ type: "error", text: "URL cannot be empty." });
+      setMessage({ type: "error", text: "URL ne može biti prazan." });
       return;
     }
 
     if (urls.some((url) => url.url === urlToSave)) {
-      setMessage({ type: "error", text: "This URL is already being tracked." });
+      setMessage({ type: "error", text: "Ovaj URL se već prati." });
       return;
     }
 
@@ -54,7 +54,7 @@ function Dashboard() {
       await apiService.validateUrl(urlToSave);
       await apiService.saveUrl(urlToSave);
       setNewUrl("");
-      setMessage({ type: "success", text: "URL saved successfully." });
+      setMessage({ type: "success", text: "URL je uspješno spremljen." });
       await fetchUrls();
     } catch (error) {
       setMessage({ type: "error", text: getFriendlyErrorMessage(error) });
@@ -67,7 +67,7 @@ function Dashboard() {
     setMessage(null);
     try {
       await apiService.deleteUrl(urlToRemove);
-      setMessage({ type: "success", text: "URL removed successfully." });
+      setMessage({ type: "success", text: "URL je uspješno uklonjen." });
       await fetchUrls();
     } catch (error) {
       setMessage({ type: "error", text: getFriendlyErrorMessage(error) });
@@ -85,10 +85,10 @@ function Dashboard() {
   };
 
   const handleSendReport = async () => {
-    setReportMsg("Sending report...");
+    setReportMsg("Slanje izvještaja...");
     try {
       const data = await apiService.sendReport();
-      setReportMsg(data?.msg || "Report sent.");
+      setReportMsg(data?.msg || "Izvještaj je poslan.");
     } catch (error) {
       setReportMsg(getFriendlyErrorMessage(error));
     }
@@ -98,14 +98,14 @@ function Dashboard() {
   return (
     <div className="dashboard-container">
       <h2 className="dashboard-title">
-        <FaTachometerAlt aria-hidden="true" /> DASHBOARD
+        <FaTachometerAlt aria-hidden="true" /> POČETNA
       </h2>
 
       <section className="card add-url-card" aria-labelledby="add-url-title">
-        <h3 id="add-url-title">Add URL to Track</h3>
+        <h3 id="add-url-title">Dodaj URL za praćenje</h3>
         <form className="input-group" onSubmit={handleAddUrl}>
           <label className="sr-only" htmlFor="tracked-url">
-            URL to track
+            URL za praćenje
           </label>
           <input
             id="tracked-url"
@@ -116,7 +116,7 @@ function Dashboard() {
             disabled={isValidating}
           />
           <button type="submit" disabled={isValidating}>
-            {isValidating ? "Validating..." : "Add"}
+            {isValidating ? "Provjera..." : "Dodaj"}
           </button>
         </form>
         {message && (
@@ -128,16 +128,16 @@ function Dashboard() {
 
       <section className="card url-list-card" aria-labelledby="tracked-urls-title">
         <div className="card-header-row">
-          <h3 id="tracked-urls-title">Tracked URLs</h3>
+          <h3 id="tracked-urls-title">Praćeni URL-ovi</h3>
           <button type="button" className="ghost-btn" onClick={fetchUrls}>
-            Refresh
+            Osvježi
           </button>
         </div>
 
         {isLoading ? (
-          <p className="empty-message">Loading URLs...</p>
+          <p className="empty-message">Učitavanje URL-ova...</p>
         ) : urls.length === 0 ? (
-          <p className="empty-message">No URLs are being tracked.</p>
+          <p className="empty-message">Trenutno se ne prati nijedan URL.</p>
         ) : (
           <div className="table-wrapper">
             <table>
@@ -145,8 +145,8 @@ function Dashboard() {
                 <tr>
                   <th>URL</th>
                   <th>Status</th>
-                  <th>Changes</th>
-                  <th>Actions</th>
+                  <th>Promjene</th>
+                  <th>Akcije</th>
                 </tr>
               </thead>
               <tbody>
@@ -162,7 +162,7 @@ function Dashboard() {
                         onClick={() => handleToggleActive(urlObj)}
                         aria-pressed={urlObj.active}
                       >
-                        {urlObj.active ? "Active" : "Inactive"}
+                        {urlObj.active ? "Aktivan" : "Neaktivan"}
                       </button>
                     </td>
                     <td>{urlObj.changes?.total ?? 0}</td>
@@ -172,7 +172,7 @@ function Dashboard() {
                         className="remove-btn"
                         onClick={() => handleRemoveUrl(urlObj.url)}
                       >
-                        Remove
+                        Ukloni
                       </button>
                     </td>
                   </tr>
@@ -189,15 +189,24 @@ function Dashboard() {
           className="send-report-btn"
           onClick={handleSendReport}
         >
-          Send Report
+          Pošalji izvještaj
         </button>
         {reportMsg && (
           <p
             className={
               "report-message" +
-              (reportMsg.toLowerCase().includes("sending") ? " waiting" : "") +
-              (reportMsg.toLowerCase().includes("error") ? " error" : "") +
-              (reportMsg.toLowerCase().includes("sent") ? " success" : "")
+              (reportMsg.toLowerCase().includes("sending") ||
+              reportMsg.toLowerCase().includes("slanje")
+                ? " waiting"
+                : "") +
+              (reportMsg.toLowerCase().includes("error") ||
+              reportMsg.toLowerCase().includes("greška")
+                ? " error"
+                : "") +
+              (reportMsg.toLowerCase().includes("sent") ||
+              reportMsg.toLowerCase().includes("poslan")
+                ? " success"
+                : "")
             }
             role="status"
           >

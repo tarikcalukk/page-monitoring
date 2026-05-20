@@ -23,7 +23,7 @@ test("returns uniform network error when server is offline", async () => {
   global.fetch = jest.fn().mockRejectedValue(new Error("offline"));
 
   await expect(request("/api/login", { auth: false })).rejects.toMatchObject({
-    message: "Server is not available. Please try again later.",
+    message: "Server trenutno nije dostupan. Pokušajte kasnije.",
     status: 0,
   });
 });
@@ -56,7 +56,7 @@ test("does not expose raw server internals for 500 responses", async () => {
     .mockResolvedValue(jsonResponse({ msg: "EPERM rename internal path" }, 500));
 
   await expect(request("/api/get-urls")).rejects.toMatchObject({
-    message: "Server error. Please try again later.",
+    message: "Greška na serveru. Pokušajte kasnije.",
     status: 500,
   });
 });

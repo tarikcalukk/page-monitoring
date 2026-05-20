@@ -36,21 +36,21 @@ function Logs() {
     <div className="logs-container">
       <div className="logs-header">
         <h2>
-          <FaClipboardList aria-hidden="true" /> DETECTION HISTORY
+          <FaClipboardList aria-hidden="true" /> HISTORIJA DETEKCIJA
         </h2>
         <button type="button" className="logs-refresh-btn" onClick={fetchLogs}>
-          Refresh
+          Osvježi
         </button>
       </div>
 
       {isLoading ? (
-        <p className="no-logs">Loading detections...</p>
+        <p className="no-logs">Učitavanje detekcija...</p>
       ) : error ? (
         <p className="logs-error" role="alert">
           {error}
         </p>
       ) : logs.length === 0 ? (
-        <p className="no-logs">No detections found.</p>
+        <p className="no-logs">Nema zabilježenih detekcija.</p>
       ) : (
         logs.map((urlObj) => (
           <section className="log-url-block" key={urlObj.url}>
@@ -62,10 +62,10 @@ function Logs() {
                   <table className="history-table">
                     <thead>
                       <tr>
-                        <th>Time</th>
+                        <th>Vrijeme</th>
                         <th>CPU (%)</th>
-                        <th>Time (ms)</th>
-                        <th>Memory (MB)</th>
+                        <th>Trajanje (ms)</th>
+                        <th>Memorija (MB)</th>
                       </tr>
                     </thead>
                     <tbody>

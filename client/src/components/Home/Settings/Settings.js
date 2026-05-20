@@ -55,7 +55,7 @@ function Settings() {
     setIsSaving(true);
     try {
       await apiService.saveSettings(settings);
-      setMsg({ type: "success", text: "Settings saved successfully." });
+      setMsg({ type: "success", text: "Postavke su uspješno spremljene." });
     } catch (error) {
       setMsg({ type: "error", text: getFriendlyErrorMessage(error) });
     } finally {
@@ -67,16 +67,16 @@ function Settings() {
     if (activePanel === "notifications") {
       return (
         <section aria-labelledby="notification-settings-title">
-          <h3 id="notification-settings-title">Notification Settings</h3>
+          <h3 id="notification-settings-title">Postavke notifikacija</h3>
           <div className="settings-account-state">
-            <span>Account email</span>
+            <span>E-mail računa</span>
             <strong>{user?.email || "-"}</strong>
             <span
               className={`settings-verification-badge ${
                 user?.emailVerified ? "verified" : "unverified"
               }`}
             >
-              {user?.emailVerified ? "Verified" : "Not verified"}
+              {user?.emailVerified ? "Verifikovan" : "Nije verifikovan"}
             </span>
           </div>
           <label>
@@ -87,7 +87,7 @@ function Settings() {
                 updateSetting("emailNotifications", event.target.checked)
               }
             />
-            Enable Email Notifications
+            Uključi e-mail notifikacije
           </label>
 
           <label>
@@ -98,12 +98,12 @@ function Settings() {
                 updateSetting("browserNotifications", event.target.checked)
               }
             />
-            Enable Browser Notifications
+            Uključi browser notifikacije
           </label>
 
           <p className="settings-hint">
-            Email notifications require a verified account email and working SMTP
-            configuration on the server.
+            E-mail notifikacije zahtijevaju verifikovan e-mail i ispravnu SMTP
+            konfiguraciju na serveru.
           </p>
         </section>
       );
@@ -112,9 +112,9 @@ function Settings() {
     if (activePanel === "data") {
       return (
         <section aria-labelledby="retention-title">
-          <h3 id="retention-title">Data Retention</h3>
+          <h3 id="retention-title">Čuvanje podataka</h3>
           <label>
-            Keep change logs for (days):
+            Čuvaj historiju promjena (dana):
             <input
               type="number"
               value={settings.logRetentionDays}
@@ -126,8 +126,8 @@ function Settings() {
             />
           </label>
           <p className="settings-hint">
-            Longer retention is useful for final-work statistics, but it increases
-            local storage growth in the JSON database.
+            Duže čuvanje je korisno za statistiku završnog rada, ali povećava
+            lokalni JSON storage.
           </p>
         </section>
       );
@@ -136,9 +136,9 @@ function Settings() {
     return (
       <>
         <section aria-labelledby="monitoring-settings-title">
-          <h3 id="monitoring-settings-title">Monitoring Settings</h3>
+          <h3 id="monitoring-settings-title">Postavke praćenja</h3>
           <label>
-            Monitoring Interval (in seconds):
+            Interval praćenja (u sekundama):
             <input
               type="number"
               value={settings.monitoringInterval}
@@ -151,7 +151,7 @@ function Settings() {
           </label>
 
           <label>
-            How Many Detections Before Sending E-mail:
+            Broj detekcija prije slanja e-maila:
             <input
               type="number"
               value={settings.maxErrors}
@@ -171,23 +171,23 @@ function Settings() {
                 updateSetting("monitoringPaused", event.target.checked)
               }
             />
-            Temporarily Pause Monitoring
+            Privremeno pauziraj praćenje
           </label>
         </section>
 
         <section aria-labelledby="detection-method-title">
-          <h3 id="detection-method-title">Detection Method</h3>
+          <h3 id="detection-method-title">Metoda detekcije</h3>
           <label>
-            Select Preferred Detection Method:
+            Odaberite preferiranu metodu:
             <select
               value={settings.preferredMethod}
               onChange={(event) =>
                 updateSetting("preferredMethod", event.target.value)
               }
             >
-              <option value="both">Both (DOM + HASH)</option>
-              <option value="HASH">Only HASH</option>
-              <option value="DOM">Only DOM</option>
+              <option value="both">Obje metode (DOM + HASH)</option>
+              <option value="HASH">Samo HASH</option>
+              <option value="DOM">Samo DOM</option>
             </select>
           </label>
         </section>
@@ -197,17 +197,17 @@ function Settings() {
 
   return (
     <div className="settings-container">
-      <h2>SETTINGS</h2>
+      <h2>POSTAVKE</h2>
 
       {isLoading ? (
-        <p className="settings-message">Loading settings...</p>
+        <p className="settings-message">Učitavanje postavki...</p>
       ) : (
         <>
-          <div className="settings-tabs" role="tablist" aria-label="Settings sections">
+          <div className="settings-tabs" role="tablist" aria-label="Sekcije postavki">
             {[
-              ["monitoring", "Monitoring"],
-              ["notifications", "Notifications"],
-              ["data", "Data"],
+              ["monitoring", "Praćenje"],
+              ["notifications", "Notifikacije"],
+              ["data", "Podaci"],
             ].map(([id, label]) => (
               <button
                 key={id}
@@ -230,7 +230,7 @@ function Settings() {
             onClick={handleSaveSettings}
             disabled={isSaving}
           >
-            {isSaving ? "Saving..." : "Save Settings"}
+            {isSaving ? "Spremanje..." : "Spremi postavke"}
           </button>
         </>
       )}

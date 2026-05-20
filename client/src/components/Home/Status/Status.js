@@ -51,52 +51,52 @@ function Status() {
           <FaServer aria-hidden="true" /> STATUS
         </h2>
         <button type="button" className="status-refresh" onClick={fetchStatus}>
-          <FaSyncAlt aria-hidden="true" /> Refresh
+          <FaSyncAlt aria-hidden="true" /> Osvježi
         </button>
       </div>
 
-      <div className="status-summary-grid" aria-label="Monitoring status summary">
+      <div className="status-summary-grid" aria-label="Sažetak statusa praćenja">
         <div className="status-summary-card">
-          <span>Total URLs</span>
+          <span>Ukupno URL-ova</span>
           <strong>{summary.total}</strong>
         </div>
         <div className="status-summary-card success">
-          <span>Active</span>
+          <span>Aktivni</span>
           <strong>{summary.active}</strong>
         </div>
         <div className="status-summary-card muted">
-          <span>Paused</span>
+          <span>Pauzirani</span>
           <strong>{summary.paused}</strong>
         </div>
         <div className="status-summary-card danger">
-          <span>With Errors</span>
+          <span>Sa greškama</span>
           <strong>{summary.failing}</strong>
         </div>
         <div className="status-summary-card info">
-          <span>Changes</span>
+          <span>Promjene</span>
           <strong>{summary.changes}</strong>
         </div>
       </div>
 
       {isLoading ? (
-        <p className="status-empty">Loading monitored URLs...</p>
+        <p className="status-empty">Učitavanje praćenih URL-ova...</p>
       ) : error ? (
         <p className="status-error" role="alert">
           {error}
         </p>
       ) : urls.length === 0 ? (
-        <p className="status-empty">No URLs have been added yet.</p>
+        <p className="status-empty">Još nije dodan nijedan URL.</p>
       ) : (
         <div className="status-table-wrapper">
           <table className="status-table">
             <thead>
               <tr>
                 <th>URL</th>
-                <th>State</th>
-                <th>Last check</th>
-                <th>Last change</th>
-                <th>Last method</th>
-                <th>Last error</th>
+                <th>Stanje</th>
+                <th>Zadnja provjera</th>
+                <th>Zadnja promjena</th>
+                <th>Zadnja metoda</th>
+                <th>Zadnja greška</th>
               </tr>
             </thead>
             <tbody>
@@ -105,7 +105,7 @@ function Status() {
                   <td className="status-url">{url.url}</td>
                   <td>
                     <span className={`status-pill ${url.active ? "on" : "off"}`}>
-                      {url.active ? "Active" : "Paused"}
+                      {url.active ? "Aktivan" : "Pauziran"}
                     </span>
                   </td>
                   <td>{formatDate(url.lastChecked)}</td>

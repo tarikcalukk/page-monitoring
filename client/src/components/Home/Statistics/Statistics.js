@@ -135,11 +135,11 @@ function UptimeCard({ urls }) {
 
   return (
     <div className="stat-card uptime-card">
-      <div className="stat-label">Uptime</div>
+      <div className="stat-label">Aktivno</div>
       <div className="stat-value" style={{ color: "#27ae60" }}>
         {uptime}%
       </div>
-      <div className="stat-label">Downtime</div>
+      <div className="stat-label">Pauzirano</div>
       <div className="stat-value" style={{ color: "#e74c3c" }}>
         {downtime}%
       </div>
@@ -155,24 +155,24 @@ function TopStats({ urls }) {
 
   return (
     <div className="top-stats">
-      <h4>TOP 3 MOST FREQUENTLY CHANGED PAGES</h4>
+      <h4>TOP 3 STRANICE SA NAJVIŠE PROMJENA</h4>
       {mostChanged.length ? (
         <ol>
           {mostChanged.map((url) => (
             <li key={url.url}>
-              {url.url} - {url.changes.total} changes
+              {url.url} - {url.changes.total} promjena
             </li>
           ))}
         </ol>
       ) : (
-        <p>No changes recorded yet.</p>
+        <p>Još nema zabilježenih promjena.</p>
       )}
     </div>
   );
 }
 
 function MiniLineChart({ data, color }) {
-  if (!data.length) return <div>No data</div>;
+  if (!data.length) return <div>Nema podataka</div>;
 
   const max = Math.max(...data, 1);
   const width = 180;
@@ -266,61 +266,61 @@ function UrlStatsBlock({ url }) {
     <div className="url-stats-block">
       <h3 className="url-title">{url.url}</h3>
       <div className="perf-trends">
-        <h4>Performance Trend (DOM)</h4>
+        <h4>Trend performansi (DOM)</h4>
         <MiniLineChart data={domHistory.map((entry) => entry.timeMs || 0)} color="#3498db" />
         <div>
-          Biggest jump: {domJump.maxJump} ms ({domJump.from} to {domJump.to})
+          Najveći skok: {domJump.maxJump} ms ({domJump.from} do {domJump.to})
         </div>
-        <h4>Performance Trend (HASH)</h4>
+        <h4>Trend performansi (HASH)</h4>
         <MiniLineChart data={hashHistory.map((entry) => entry.timeMs || 0)} color="#e67e22" />
         <div>
-          Biggest jump: {hashJump.maxJump} ms ({hashJump.from} to {hashJump.to})
+          Najveći skok: {hashJump.maxJump} ms ({hashJump.from} do {hashJump.to})
         </div>
       </div>
 
       <div className="content-changes">
         <div>
-          Total changes: <b>{url.changes?.total || 0}</b>
+          Ukupno promjena: <b>{url.changes?.total || 0}</b>
         </div>
         <div>
-          Last change:{" "}
+          Zadnja promjena:{" "}
           <b>{lastChange.time ? new Date(lastChange.time).toLocaleString() : "-"}</b>
         </div>
         <div>
-          Last method: <b>{url.changes?.lastDetectedMethod || "-"}</b>
+          Zadnja metoda: <b>{url.changes?.lastDetectedMethod || "-"}</b>
         </div>
       </div>
 
       <div className="stability-stats">
         <div>
-          Successful checks: <b>{domHistory.length}</b>
+          Uspješne provjere: <b>{domHistory.length}</b>
         </div>
         <div>
-          Average time between changes: <b>{avgBetween}</b>
+          Prosječno vrijeme između promjena: <b>{avgBetween}</b>
         </div>
       </div>
 
       <div className="structure-stats">
         <div>
-          Average DOM elements: <b>{averageElements.toFixed(1)}</b>
+          Prosjek DOM elemenata: <b>{averageElements.toFixed(1)}</b>
         </div>
         <div>
-          Maximum DOM depth: <b>{maxDepth}</b>
+          Maksimalna DOM dubina: <b>{maxDepth}</b>
         </div>
         <div>
-          Average attributes: <b>{averageAttributes.toFixed(1)}</b>
+          Prosjek atributa: <b>{averageAttributes.toFixed(1)}</b>
         </div>
       </div>
 
       <div className="advanced-analysis">
         <div>
-          Max load time:{" "}
+          Maksimalno vrijeme obrade:{" "}
           <b>{Math.max(...domHistory.map((entry) => entry.timeMs || 0), 0)} ms</b>
         </div>
       </div>
 
       <button type="button" className="export-csv-btn" onClick={downloadCsv}>
-        Export CSV
+        Izvezi CSV
       </button>
     </div>
   );
@@ -391,9 +391,9 @@ function Statistics() {
 
   return (
     <div className="statistics-container">
-      <h2 className="statistics-title">STATISTICS</h2>
+      <h2 className="statistics-title">STATISTIKA</h2>
       {loading ? (
-        <div className="empty-message">Loading statistics...</div>
+        <div className="empty-message">Učitavanje statistike...</div>
       ) : error ? (
         <div className="empty-message error" role="alert">
           {error}
@@ -404,21 +404,21 @@ function Statistics() {
             <div className="stat-cards-block">
               <h3 className="stat-block-title">DOM</h3>
               <AnimatedStatCard
-                label="Avg. Time"
+                label="Prosj. vrijeme"
                 value={metrics.avgDomTime}
                 unit="ms"
                 color="#3498db"
                 max={metrics.maxTime}
               />
               <AnimatedStatCard
-                label="Avg. CPU"
+                label="Prosj. CPU"
                 value={metrics.avgDomCpu}
                 unit="%"
                 color="#27ae60"
                 max={metrics.maxCpu}
               />
               <AnimatedStatCard
-                label="Avg. Memory"
+                label="Prosj. memorija"
                 value={metrics.avgDomMem}
                 unit="MB"
                 color="#e67e22"
@@ -428,21 +428,21 @@ function Statistics() {
             <div className="stat-cards-block">
               <h3 className="stat-block-title">HASH</h3>
               <AnimatedStatCard
-                label="Avg. Time"
+                label="Prosj. vrijeme"
                 value={metrics.avgHashTime}
                 unit="ms"
                 color="#3498db"
                 max={metrics.maxTime}
               />
               <AnimatedStatCard
-                label="Avg. CPU"
+                label="Prosj. CPU"
                 value={metrics.avgHashCpu}
                 unit="%"
                 color="#27ae60"
                 max={metrics.maxCpu}
               />
               <AnimatedStatCard
-                label="Avg. Memory"
+                label="Prosj. memorija"
                 value={metrics.avgHashMem}
                 unit="MB"
                 color="#e67e22"

@@ -41,7 +41,7 @@ export async function request(path, options = {}) {
       signal,
     });
   } catch {
-    throw new ApiError("Server is not available. Please try again later.", 0);
+    throw new ApiError("Server trenutno nije dostupan. Pokušajte kasnije.", 0);
   }
 
   const data = await readResponse(response).catch(() => null);
@@ -52,8 +52,8 @@ export async function request(path, options = {}) {
     }
     const message =
       response.status >= 500
-        ? "Server error. Please try again later."
-        : data?.msg || "Request failed. Please try again.";
+        ? "Greška na serveru. Pokušajte kasnije."
+        : data?.msg || "Zahtjev nije uspio. Pokušajte ponovo.";
     throw new ApiError(
       message,
       response.status,

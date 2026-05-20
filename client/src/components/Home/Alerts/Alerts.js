@@ -40,8 +40,8 @@ function Alerts() {
       items.push({
         id: "email",
         severity: "danger",
-        title: "Email is not verified",
-        text: "Email notifications cannot be trusted until the account email is verified.",
+        title: "E-mail nije verifikovan",
+        text: "E-mail notifikacije nisu pouzdane dok adresa računa nije potvrđena.",
       });
     }
 
@@ -49,8 +49,8 @@ function Alerts() {
       items.push({
         id: "paused",
         severity: "warning",
-        title: "Monitoring is paused",
-        text: "Tracked URLs will not be checked while global monitoring is paused.",
+        title: "Praćenje je pauzirano",
+        text: "Praćeni URL-ovi se neće provjeravati dok je globalno praćenje pauzirano.",
       });
     }
 
@@ -58,8 +58,8 @@ function Alerts() {
       items.push({
         id: "notifications",
         severity: "warning",
-        title: "All notifications are disabled",
-        text: "Detected changes will be recorded, but the user will not be notified.",
+        title: "Sve notifikacije su isključene",
+        text: "Detektovane promjene će biti zabilježene, ali korisnik neće dobiti obavijest.",
       });
     }
 
@@ -69,7 +69,7 @@ function Alerts() {
         items.push({
           id: `error-${url.url}`,
           severity: "danger",
-          title: "URL check failed",
+          title: "Provjera URL-a nije uspjela",
           text: `${url.url}: ${url.lastError}`,
         });
       });
@@ -80,8 +80,8 @@ function Alerts() {
         items.push({
           id: `noisy-${url.url}`,
           severity: "info",
-          title: "High change volume",
-          text: `${url.url} has ${url.changes.total} recorded detections.`,
+          title: "Velik broj promjena",
+          text: `${url.url} ima ${url.changes.total} zabilježenih detekcija.`,
         });
       });
 
@@ -92,15 +92,15 @@ function Alerts() {
     <div className="alerts-container">
       <div className="alerts-header">
         <h2>
-          <FaBell aria-hidden="true" /> ALERTS
+          <FaBell aria-hidden="true" /> UPOZORENJA
         </h2>
         <button type="button" className="alerts-refresh" onClick={fetchAlerts}>
-          Refresh
+          Osvježi
         </button>
       </div>
 
       {isLoading ? (
-        <p className="alerts-empty">Loading alert state...</p>
+        <p className="alerts-empty">Učitavanje stanja upozorenja...</p>
       ) : error ? (
         <p className="alerts-error" role="alert">
           {error}
@@ -109,12 +109,12 @@ function Alerts() {
         <div className="alerts-good">
           <FaShieldAlt aria-hidden="true" />
           <div>
-            <strong>Everything looks healthy.</strong>
-            <span>No notification, URL, or account risks are currently active.</span>
+            <strong>Sve izgleda uredno.</strong>
+            <span>Trenutno nema aktivnih rizika za notifikacije, URL-ove ili račun.</span>
           </div>
         </div>
       ) : (
-        <ul className="alerts-list" aria-label="Active alerts">
+        <ul className="alerts-list" aria-label="Aktivna upozorenja">
           {alerts.map((alert) => (
             <li className={`alert-item ${alert.severity}`} key={alert.id}>
               <FaExclamationTriangle aria-hidden="true" />
