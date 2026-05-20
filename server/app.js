@@ -33,7 +33,7 @@ function createApp() {
   app.use(routes);
 
   if (hasClientBuild) {
-    app.get("*", (req, res, next) => {
+    app.get("/*", (req, res, next) => {
       if (
         req.method !== "GET" ||
         req.path.startsWith("/api") ||
