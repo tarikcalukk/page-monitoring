@@ -7,11 +7,14 @@ body {
 
 .dashboard-container {
   max-width: 900px;
+  width: 100%;
   margin: 30px auto;
   padding: 30px;
   background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
   border-radius: 8px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .dashboard-title {
@@ -124,6 +127,7 @@ body {
 
 .table-wrapper {
   overflow-x: auto;
+  max-width: 100%;
 }
 
 table {
@@ -310,12 +314,14 @@ th {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
   width: 100%;
   margin-bottom: 24px;
 }
 
 .report-message {
-  margin-top: 18px;
+  margin: 0;
   font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
   font-size: 1.08rem;
   font-weight: 600;
@@ -327,9 +333,29 @@ th {
   border-radius: 8px;
   padding: 10px 22px;
   display: inline-block;
-  min-width: 180px;
+  min-width: min(180px, 100%);
+  max-width: min(640px, 100%);
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
   box-shadow: 0 0 12px #00fff7 inset;
   animation: reportFadeIn 0.5s;
+}
+
+body.dark-mode .dashboard-container,
+body.dark-mode .card {
+  background: linear-gradient(135deg, #0f172a 0%, #111c32 100%);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+}
+
+body.dark-mode .dashboard-title,
+body.dark-mode .card h3 {
+  color: #e0f2fe;
+}
+
+body.dark-mode .ghost-btn {
+  background: rgba(15, 23, 42, 0.9);
+  color: #dbeafe;
+  border-color: rgba(56, 189, 248, 0.35);
 }
 
 @keyframes reportFadeIn {

@@ -29,14 +29,14 @@ function Account() {
     clearMessage();
 
     if (newPassword !== confirmPassword) {
-      setMessage({ type: "error", text: "Passwords do not match." });
+      setMessage({ type: "error", text: "Lozinke se ne podudaraju." });
       return;
     }
 
     if (!isStrongPassword(newPassword)) {
       setMessage({
         type: "error",
-        text: "Password does not meet the required criteria.",
+        text: "Lozinka ne zadovoljava tražene uslove.",
       });
       return;
     }
@@ -49,7 +49,7 @@ function Account() {
       });
       setMessage({
         type: "success",
-        text: response?.msg || "Password changed successfully.",
+        text: response?.msg || "Lozinka je uspješno promijenjena.",
       });
       setCurrentPassword("");
       setNewPassword("");
@@ -65,7 +65,7 @@ function Account() {
 
   const handleDelete = async () => {
     const confirmed = window.confirm(
-      "Are you sure you want to delete your account? This action cannot be undone.",
+      "Jeste li sigurni da želite obrisati račun? Ova radnja se ne može poništiti.",
     );
     if (!confirmed) return;
 
@@ -75,7 +75,7 @@ function Account() {
       const response = await apiService.deleteAccount();
       setMessage({
         type: "success",
-        text: response?.msg || "Account deleted successfully.",
+        text: response?.msg || "Račun je uspješno obrisan.",
       });
       window.setTimeout(logout, 800);
     } catch (error) {
@@ -88,36 +88,36 @@ function Account() {
   return (
     <div className="account-container">
       <h2>
-        <FaUserCircle aria-hidden="true" /> ACCOUNT SETTINGS
+        <FaUserCircle aria-hidden="true" /> POSTAVKE RAČUNA
       </h2>
 
       <section aria-labelledby="account-email-title">
-        <h3 id="account-email-title">E-mail Address</h3>
+        <h3 id="account-email-title">E-mail adresa</h3>
         <p>
-          Your email address is: <strong>{user?.email || "-"}</strong>
+          Vaša e-mail adresa je: <strong>{user?.email || "-"}</strong>
         </p>
       </section>
 
       <section aria-labelledby="password-title">
         <div className="password-header">
-          <h3 id="password-title">Change Password</h3>
+          <h3 id="password-title">Promjena lozinke</h3>
           <button
             type="button"
             className="toggle-link"
             onClick={() => setShowPasswordForm((current) => !current)}
           >
-            {showPasswordForm ? "Hide" : "Show"}
+            {showPasswordForm ? "Sakrij" : "Prikaži"}
           </button>
         </div>
 
         {showPasswordForm && (
           <form onSubmit={handlePasswordChange} className="password-form">
             <div className="password-inputs">
-              <label htmlFor="current-password">Current password</label>
+              <label htmlFor="current-password">Trenutna lozinka</label>
               <input
                 id="current-password"
                 type="password"
-                placeholder="Current password"
+                placeholder="Trenutna lozinka"
                 value={currentPassword}
                 onChange={(event) => {
                   setCurrentPassword(event.target.value);
@@ -127,11 +127,11 @@ function Account() {
                 required
               />
 
-              <label htmlFor="new-password">New password</label>
+              <label htmlFor="new-password">Nova lozinka</label>
               <input
                 id="new-password"
                 type="password"
-                placeholder="New password"
+                placeholder="Nova lozinka"
                 value={newPassword}
                 onChange={(event) => {
                   setNewPassword(event.target.value);
@@ -142,11 +142,11 @@ function Account() {
               />
               <PasswordChecklist password={newPassword} />
 
-              <label htmlFor="confirm-new-password">Confirm password</label>
+              <label htmlFor="confirm-new-password">Potvrdite lozinku</label>
               <input
                 id="confirm-new-password"
                 type="password"
-                placeholder="Confirm password"
+                placeholder="Potvrdite lozinku"
                 value={confirmPassword}
                 onChange={(event) => {
                   setConfirmPassword(event.target.value);
@@ -158,7 +158,7 @@ function Account() {
             </div>
 
             <button type="submit" disabled={isSavingPassword}>
-              {isSavingPassword ? "Saving..." : "Save password"}
+              {isSavingPassword ? "Spremanje..." : "Spremi lozinku"}
             </button>
           </form>
         )}
@@ -171,10 +171,10 @@ function Account() {
       )}
 
       <section className="delete-account-section" aria-labelledby="delete-title">
-        <h3 id="delete-title">Delete Account</h3>
+        <h3 id="delete-title">Brisanje računa</h3>
         <p>
-          This account was created on <strong>{userSince}</strong>. Deleting
-          your account will remove all content associated with it.
+          Ovaj račun je kreiran <strong>{userSince}</strong>. Brisanjem računa
+          uklanjaju se svi povezani podaci.
         </p>
         <button
           type="button"
@@ -182,7 +182,7 @@ function Account() {
           onClick={handleDelete}
           disabled={isDeleting}
         >
-          {isDeleting ? "Deleting..." : "Delete Account"}
+          {isDeleting ? "Brisanje..." : "Obriši račun"}
         </button>
       </section>
     </div>

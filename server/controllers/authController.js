@@ -28,6 +28,14 @@ async function verify(req, res) {
   }
 }
 
+async function verifyEmail(req, res) {
+  res.json(await authService.verifyEmail(req.body));
+}
+
+async function resendVerificationCode(req, res) {
+  res.json(await authService.resendVerificationCode(req.body));
+}
+
 async function changePassword(req, res) {
   res.json(
     await authService.changePassword(
@@ -46,6 +54,8 @@ module.exports = {
   register,
   login,
   verify,
+  verifyEmail,
+  resendVerificationCode,
   changePassword,
   deleteAccount,
 };

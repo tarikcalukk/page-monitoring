@@ -4,17 +4,21 @@ import {
   FaChartBar,
   FaClipboardList,
   FaCog,
+  FaExclamationTriangle,
   FaGlobe,
   FaMoon,
+  FaServer,
   FaSignOutAlt,
   FaTachometerAlt,
   FaUserCircle,
 } from "react-icons/fa";
 import "./Home.css";
 import Account from "./Account/Account";
+import Alerts from "./Alerts/Alerts";
 import Dashboard from "./Dashboard/Dashboard";
 import Logs from "./Logs/Logs";
 import Settings from "./Settings/Settings";
+import Status from "./Status/Status";
 import Statistics from "./Statistics/Statistics";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNotifications } from "../../hooks/useNotifications";
@@ -23,31 +27,43 @@ import { useOutsideClick } from "../../hooks/useOutsideClick";
 const TABS = [
   {
     id: "dashboard",
-    label: "Dashboard",
+    label: "Početna",
     icon: FaTachometerAlt,
     group: "primary",
   },
   {
     id: "statistics",
-    label: "Statistics",
+    label: "Statistika",
     icon: FaChartBar,
     group: "primary",
   },
   {
+    id: "status",
+    label: "Status",
+    icon: FaServer,
+    group: "primary",
+  },
+  {
+    id: "alerts",
+    label: "Upozorenja",
+    icon: FaExclamationTriangle,
+    group: "primary",
+  },
+  {
     id: "logs",
-    label: "Logs",
+    label: "Historija",
     icon: FaClipboardList,
     group: "primary",
   },
   {
     id: "account",
-    label: "Account",
+    label: "Račun",
     icon: FaUserCircle,
     group: "secondary",
   },
   {
     id: "settings",
-    label: "Settings",
+    label: "Postavke",
     icon: FaCog,
     group: "secondary",
   },
@@ -92,6 +108,10 @@ function Home() {
         return <Settings />;
       case "logs":
         return <Logs />;
+      case "status":
+        return <Status />;
+      case "alerts":
+        return <Alerts />;
       case "dashboard":
         return <Dashboard />;
       case "statistics":
@@ -134,7 +154,7 @@ function Home() {
       <header className="top-bar">
         <span className="site-title">
           <FaGlobe className="site-title-icon" aria-hidden="true" />
-          Site Monitoring
+          Praćenje Stranica
         </span>
 
         <div className="topbar-icons">
@@ -142,7 +162,7 @@ function Home() {
             <button
               className="topbar-icon-btn"
               type="button"
-              aria-label="Open detections"
+              aria-label="Otvori detekcije"
               aria-expanded={notifOpen}
               aria-controls="notification-popup"
               onClick={handleToggleNotifications}
@@ -163,19 +183,19 @@ function Home() {
                 aria-label="Detected changes"
               >
                 <div className="notif-popup-title">
-                  <span>Detections</span>
+                <span>Detekcije</span>
                   <button
                     type="button"
                     className="notif-refresh-btn"
                     onClick={refresh}
                     disabled={isLoading}
                   >
-                    {isLoading ? "Refreshing" : "Refresh"}
+                    {isLoading ? "Osvježavanje" : "Osvježi"}
                   </button>
                 </div>
                 {notifications.length === 0 ? (
                   <div className="notif-empty" role="status">
-                    No detections yet.
+                    Još nema detekcija.
                   </div>
                 ) : (
                   <ul className="notif-list">
@@ -186,7 +206,7 @@ function Home() {
                           {notification.lastMethod}
                         </span>
                         <span className="notif-count">
-                          <b>{notification.total}</b> detections
+                          <b>{notification.total}</b> detekcija
                         </span>
                       </li>
                     ))}
@@ -199,7 +219,7 @@ function Home() {
           <button
             className={`topbar-icon-btn ${darkMode ? "is-active" : ""}`}
             type="button"
-            aria-label="Toggle dark mode"
+            aria-label="Prebaci tamni režim"
             aria-pressed={darkMode}
             onClick={() => setDarkMode((prev) => !prev)}
           >
@@ -218,7 +238,7 @@ function Home() {
             className="logout-button sidebar-logout"
           >
             <FaSignOutAlt aria-hidden="true" />
-            <span>Log Out</span>
+            <span>Odjava</span>
           </button>
         </nav>
 

@@ -10,6 +10,7 @@ module.exports = pino({
       "password",
       "currentPassword",
       "newPassword",
+      "verificationCode",
       "EMAIL_PASS",
       "JWT_SECRET",
     ],

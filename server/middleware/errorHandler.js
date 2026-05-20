@@ -21,7 +21,9 @@ function errorHandler(err, req, res, next) {
     if (!req.log) logger.error({ err }, message);
   }
 
-  return res.status(safeStatus).json({ msg: message });
+  return res
+    .status(safeStatus)
+    .json({ msg: message, ...(err.details ? err.details : {}) });
 }
 
 module.exports = {

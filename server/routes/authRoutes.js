@@ -19,6 +19,18 @@ router.post(
   validateBody(schemas.login),
   asyncHandler(authController.login),
 );
+router.post(
+  "/api/verify-email",
+  authLimiter,
+  validateBody(schemas.verifyEmail),
+  asyncHandler(authController.verifyEmail),
+);
+router.post(
+  "/api/resend-verification-code",
+  authLimiter,
+  validateBody(schemas.resendVerificationCode),
+  asyncHandler(authController.resendVerificationCode),
+);
 router.get("/api/verify", asyncHandler(authController.verify));
 router.post(
   "/api/change-password",

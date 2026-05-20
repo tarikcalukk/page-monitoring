@@ -1,6 +1,6 @@
-const nodemailer = require("nodemailer");
 const { Parser } = require("json2csv");
 const config = require("../config");
+const mailService = require("./mailService");
 
 function buildCsvForUser(user) {
   const rows = user.urls.flatMap((urlObj) =>
@@ -42,20 +42,15 @@ function buildCsvForUser(user) {
 }
 
 async function sendReportEmail(user) {
-  if (!config.email.user || !config.email.pass) {
+  if (
+    config.email.deliveryMode === "smtp" &&
+    (!config.email.host || !config.email.from)
+  ) {
     return {
       sent: false,
-      msg: "Email is not configured on the server, but report data is available for CSV export.",
+      msg: "E-mail nije konfigurisan na serveru, ali podaci izvještaja su dostupni kroz CSV izvoz.",
     };
   }
-
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: config.email.user,
-      pass: config.email.pass,
-    },
-  });
 
   const csv = buildCsvForUser(user);
   const totalChanges = user.urls.reduce(
@@ -63,8 +58,8 @@ async function sendReportEmail(user) {
     0,
   );
 
-  await transporter.sendMail({
-    from: `"Page Monitor" <${config.email.user}>`,
+  const delivery = await mailService.sendMail({
+    from: config.email.from || "Page Monitoring <no-reply@page-monitoring.local>",
     to: user.email,
     subject: "Page Monitoring Report",
     text: `Ukupno nadgledanih URL-ova: ${user.urls.length}\nUkupno detektovanih promjena: ${totalChanges}\nCSV izvjestaj je u prilogu.`,
@@ -79,7 +74,14 @@ async function sendReportEmail(user) {
     attachments: [{ filename: "page-monitoring-report.csv", content: csv }],
   });
 
-  return { sent: true, msg: "Report sent to your email." };
+  return {
+    sent: true,
+    deliveryMode: delivery.mode,
+    msg:
+      delivery.mode === "mailpit"
+        ? "Izvještaj je poslan u lokalni Mailpit inbox. Otvorite http://localhost:8025 za pregled."
+        : "Izvještaj je poslan na vaš e-mail.",
+  };
 }
 
 module.exports = {

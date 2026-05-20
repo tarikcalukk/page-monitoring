@@ -33,7 +33,7 @@ function AuthForm({
         <form className="auth-form" onSubmit={onSubmit} noValidate>
           {children}
           <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Please wait..." : submitLabel}
+            {isSubmitting ? "Molimo sačekajte..." : submitLabel}
           </button>
         </form>
 

@@ -26,12 +26,12 @@ function Login() {
 
     const normalizedEmail = normalizeEmail(email);
     if (!isValidEmail(normalizedEmail)) {
-      setErrorMessage("Please enter a valid email address.");
+      setErrorMessage("Unesite ispravnu e-mail adresu.");
       return;
     }
 
     if (!password) {
-      setErrorMessage("Password is required.");
+      setErrorMessage("Lozinka je obavezna.");
       return;
     }
 
@@ -40,6 +40,13 @@ function Login() {
       await login({ email: normalizedEmail, password });
       navigate(redirectTo, { replace: true });
     } catch (error) {
+      if (error.details?.needsEmailVerification) {
+        navigate("/verify-email", {
+          replace: true,
+          state: { email: error.details.email || normalizedEmail },
+        });
+        return;
+      }
       setErrorMessage(getFriendlyErrorMessage(error));
     } finally {
       setIsSubmitting(false);
@@ -50,34 +57,34 @@ function Login() {
 
   return (
     <AuthForm
-      title="Sign In"
+      title="Prijava"
       error={errorMessage}
       onSubmit={handleLogin}
-      submitLabel="Login"
+      submitLabel="Prijavi se"
       isSubmitting={isSubmitting}
       footer={
         <p className="auth-link">
-          Don't have an account? <Link to="/register">Sign up</Link>
+          Nemate račun? <Link to="/register">Registrujte se</Link>
         </p>
       }
     >
-      <label htmlFor="login-email">Email</label>
+      <label htmlFor="login-email">E-mail</label>
       <input
         id="login-email"
         type="email"
         autoComplete="email"
-        placeholder="name@example.com"
+        placeholder="ime@example.com"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
         required
       />
 
-      <label htmlFor="login-password">Password</label>
+      <label htmlFor="login-password">Lozinka</label>
       <input
         id="login-password"
         type="password"
         autoComplete="current-password"
-        placeholder="Your password"
+        placeholder="Vaša lozinka"
         value={password}
         onChange={(event) => setPassword(event.target.value)}
         required

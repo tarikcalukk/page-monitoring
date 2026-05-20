@@ -31,8 +31,8 @@ afterEach(() => {
 
 test("renders login screen", () => {
   render(<App />);
-  expect(screen.getByRole("heading", { name: /sign in/i })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: /prijava/i })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /prijavi se/i })).toBeInTheDocument();
 });
 
 test("login flow stores token and opens protected home", async () => {
@@ -48,26 +48,26 @@ test("login flow stores token and opens protected home", async () => {
   });
 
   render(<App />);
-  await userEvent.type(screen.getByLabelText(/email/i), "user@example.com");
-  await userEvent.type(screen.getByLabelText(/password/i), "Password123");
-  await userEvent.click(screen.getByRole("button", { name: /login/i }));
+  await userEvent.type(screen.getByLabelText(/e-mail/i), "user@example.com");
+  await userEvent.type(screen.getByLabelText(/lozinka/i), "Password123");
+  await userEvent.click(screen.getByRole("button", { name: /prijavi se/i }));
 
   await waitFor(() => {
     expect(localStorage.getItem("token")).toBe("valid-token");
   });
-  expect(await screen.findByText(/site monitoring/i)).toBeInTheDocument();
+  expect(await screen.findByText(/praćenje stranica/i)).toBeInTheDocument();
 });
 
 test("registration validates password confirmation before calling API", async () => {
   render(<App />);
-  await userEvent.click(screen.getByRole("link", { name: /sign up/i }));
+  await userEvent.click(screen.getByRole("link", { name: /registrujte se/i }));
 
-  await userEvent.type(screen.getByLabelText(/^email$/i), "new@example.com");
-  await userEvent.type(screen.getByLabelText(/^password$/i), "Password123");
-  await userEvent.type(screen.getByLabelText(/confirm password/i), "Password456");
-  await userEvent.click(screen.getByRole("button", { name: /register/i }));
+  await userEvent.type(screen.getByLabelText(/^e-mail$/i), "new@example.com");
+  await userEvent.type(screen.getByLabelText(/^lozinka$/i), "Password123");
+  await userEvent.type(screen.getByLabelText(/potvrdite lozinku/i), "Password456");
+  await userEvent.click(screen.getByRole("button", { name: /kreiraj račun/i }));
 
-  expect(await screen.findByRole("alert")).toHaveTextContent(/passwords do not match/i);
+  expect(await screen.findByRole("alert")).toHaveTextContent(/lozinke se ne podudaraju/i);
   expect(global.fetch).toBeUndefined();
 });
 
@@ -75,13 +75,86 @@ test("registration shows server offline message", async () => {
   global.fetch = jest.fn().mockRejectedValue(new Error("network down"));
 
   render(<App />);
-  await userEvent.click(screen.getByRole("link", { name: /sign up/i }));
-  await userEvent.type(screen.getByLabelText(/^email$/i), "new@example.com");
-  await userEvent.type(screen.getByLabelText(/^password$/i), "Password123");
-  await userEvent.type(screen.getByLabelText(/confirm password/i), "Password123");
-  await userEvent.click(screen.getByRole("button", { name: /register/i }));
+  await userEvent.click(screen.getByRole("link", { name: /registrujte se/i }));
+  await userEvent.type(screen.getByLabelText(/^e-mail$/i), "new@example.com");
+  await userEvent.type(screen.getByLabelText(/^lozinka$/i), "Password123");
+  await userEvent.type(screen.getByLabelText(/potvrdite lozinku/i), "Password123");
+  await userEvent.click(screen.getByRole("button", { name: /kreiraj račun/i }));
 
-  expect(await screen.findByRole("alert")).toHaveTextContent(/server is not available/i);
+  expect(await screen.findByRole("alert")).toHaveTextContent(/server trenutno nije dostupan/i);
+});
+
+test("registration opens email verification and verifies account", async () => {
+  let verifyEmailPayload = null;
+
+  mockApi((path, options) => {
+    if (path === "/api/register") {
+      return jsonResponse({
+        msg: "User registered successfully. Verification code sent.",
+        email: "new@example.com",
+        emailVerificationRequired: true,
+      });
+    }
+    if (path === "/api/verify-email") {
+      verifyEmailPayload = JSON.parse(options.body);
+      return jsonResponse({
+        msg: "Email verified successfully.",
+        token: "verified-token",
+        user: { email: "new@example.com", emailVerified: true },
+      });
+    }
+    if (path === "/api/get-urls") return jsonResponse([]);
+    if (path === "/api/settings") return jsonResponse({});
+    return jsonResponse({ msg: "not found" }, 404);
+  });
+
+  render(<App />);
+  await userEvent.click(screen.getByRole("link", { name: /registrujte se/i }));
+  await userEvent.type(screen.getByLabelText(/^e-mail$/i), "new@example.com");
+  await userEvent.type(screen.getByLabelText(/^lozinka$/i), "Password123");
+  await userEvent.type(screen.getByLabelText(/potvrdite lozinku/i), "Password123");
+  await userEvent.click(screen.getByRole("button", { name: /kreiraj račun/i }));
+
+  expect(
+    await screen.findByRole("heading", { name: /verifikacija e-maila/i }),
+  ).toBeInTheDocument();
+  await userEvent.type(screen.getByLabelText(/verifikacijski kod/i), "123456");
+  await userEvent.click(screen.getByRole("button", { name: /^potvrdi$/i }));
+
+  await waitFor(() => {
+    expect(localStorage.getItem("token")).toBe("verified-token");
+  });
+  expect(verifyEmailPayload).toEqual({
+    email: "new@example.com",
+    code: "123456",
+  });
+  expect(await screen.findByText(/praćenje stranica/i)).toBeInTheDocument();
+});
+
+test("login redirects unverified users to verification page", async () => {
+  mockApi((path) => {
+    if (path === "/api/login") {
+      return jsonResponse(
+        {
+          msg: "Email verification required",
+          needsEmailVerification: true,
+          email: "pending@example.com",
+        },
+        403,
+      );
+    }
+    return jsonResponse({ msg: "not found" }, 404);
+  });
+
+  render(<App />);
+  await userEvent.type(screen.getByLabelText(/e-mail/i), "pending@example.com");
+  await userEvent.type(screen.getByLabelText(/lozinka/i), "Password123");
+  await userEvent.click(screen.getByRole("button", { name: /prijavi se/i }));
+
+  expect(
+    await screen.findByRole("heading", { name: /verifikacija e-maila/i }),
+  ).toBeInTheDocument();
+  expect(screen.getByLabelText(/^e-mail$/i)).toHaveValue("pending@example.com");
 });
 
 test("protected home redirects to login when token is invalid", async () => {
@@ -96,6 +169,6 @@ test("protected home redirects to login when token is invalid", async () => {
 
   render(<App />);
 
-  expect(await screen.findByRole("heading", { name: /sign in/i })).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: /prijava/i })).toBeInTheDocument();
   expect(localStorage.getItem("token")).toBeNull();
 });

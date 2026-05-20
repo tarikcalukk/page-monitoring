@@ -6,6 +6,9 @@ function normalizeUser(user) {
   return {
     ...user,
     email: normalizeEmail(user.email),
+    emailVerified: user.emailVerified === undefined ? true : Boolean(user.emailVerified),
+    emailVerifiedAt: user.emailVerifiedAt || null,
+    emailVerification: user.emailVerification || null,
     tokenVersion: Number(user.tokenVersion || 0),
     createdAt: user.createdAt || new Date().toISOString(),
     settings: { ...DEFAULT_SETTINGS, ...(user.settings || {}) },

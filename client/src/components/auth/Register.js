@@ -32,29 +32,32 @@ function Register() {
 
     const normalizedEmail = normalizeEmail(email);
     if (!isValidEmail(normalizedEmail)) {
-      setErrorMessage("Please enter a valid email address.");
+      setErrorMessage("Unesite ispravnu e-mail adresu.");
       return;
     }
 
     if (password !== confirmPassword) {
-      setErrorMessage("Passwords do not match.");
+      setErrorMessage("Lozinke se ne podudaraju.");
       return;
     }
 
     if (!isStrongPassword(password)) {
       setErrorMessage(
-        "Password must meet all listed requirements before registration.",
+        "Lozinka mora zadovoljiti sve prikazane uslove prije registracije.",
       );
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await register({ email: normalizedEmail, password });
-      setSuccessMessage("Account created successfully. Redirecting to login.");
-      setTimeout(() => {
-        navigate("/");
-      }, 700);
+      const response = await register({ email: normalizedEmail, password });
+      navigate("/verify-email", {
+        replace: true,
+        state: {
+          email: response?.email || normalizedEmail,
+          devVerificationCode: response?.devVerificationCode,
+        },
+      });
     } catch (error) {
       setErrorMessage(getFriendlyErrorMessage(error));
     } finally {
@@ -66,35 +69,35 @@ function Register() {
 
   return (
     <AuthForm
-      title="Sign Up"
+      title="Registracija"
       error={errorMessage}
       success={successMessage}
       onSubmit={handleRegister}
-      submitLabel="Register"
+      submitLabel="Kreiraj račun"
       isSubmitting={isSubmitting}
       footer={
         <p className="auth-link">
-          Already have an account? <Link to="/">Log in</Link>
+          Već imate račun? <Link to="/">Prijavite se</Link>
         </p>
       }
     >
-      <label htmlFor="register-email">Email</label>
+      <label htmlFor="register-email">E-mail</label>
       <input
         id="register-email"
         type="email"
         autoComplete="email"
-        placeholder="name@example.com"
+        placeholder="ime@example.com"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
         required
       />
 
-      <label htmlFor="register-password">Password</label>
+      <label htmlFor="register-password">Lozinka</label>
       <input
         id="register-password"
         type="password"
         autoComplete="new-password"
-        placeholder="Create a password"
+        placeholder="Kreirajte lozinku"
         value={password}
         onChange={(event) => setPassword(event.target.value)}
         aria-describedby="password-requirements"
@@ -104,12 +107,12 @@ function Register() {
         <PasswordChecklist password={password} />
       </div>
 
-      <label htmlFor="register-confirm-password">Confirm password</label>
+      <label htmlFor="register-confirm-password">Potvrdite lozinku</label>
       <input
         id="register-confirm-password"
         type="password"
         autoComplete="new-password"
-        placeholder="Repeat password"
+        placeholder="Ponovite lozinku"
         value={confirmPassword}
         onChange={(event) => setConfirmPassword(event.target.value)}
         required

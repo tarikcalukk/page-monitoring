@@ -4,6 +4,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import RequireAuth from "./components/routing/RequireAuth";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 import HomePage from "./pages/HomePage";
 import "./components/Home/Home.css";
 
@@ -14,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route element={<RequireAuth />}>
             <Route path="/home" element={<HomePage />} />
           </Route>
