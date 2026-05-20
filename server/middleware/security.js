@@ -14,10 +14,14 @@ function configureSecurity(app) {
   app.use(
     cors({
       origin(origin, callback) {
-        if (!origin || config.allowedOrigins.includes(origin))
+        // Allow requests without origin header (same-origin, like Electron, mobile apps, etc)
+        if (!origin) return callback(null, true);
+        // Allow configured origins
+        if (config.allowedOrigins.includes(origin))
           return callback(null, true);
         return callback(new AppError("CORS origin is not allowed.", 403));
       },
+      credentials: true,
     }),
   );
 }
