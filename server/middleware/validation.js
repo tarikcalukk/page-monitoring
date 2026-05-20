@@ -52,9 +52,20 @@ const password = Joi.string().required().custom(strongPassword).messages({
 });
 
 const url = Joi.string().trim().required().custom(httpUrl);
+const verificationCode = Joi.string()
+  .trim()
+  .pattern(/^\d{6}$/)
+  .required()
+  .messages({
+    "string.pattern.base": "Verification code must contain 6 digits",
+    "string.empty": "Verification code is required",
+    "any.required": "Verification code is required",
+  });
 
 const schemas = {
   register: Joi.object({ email, password }),
+  verifyEmail: Joi.object({ email, code: verificationCode }),
+  resendVerificationCode: Joi.object({ email }),
   login: Joi.object({
     email,
     password: Joi.string().required().messages({

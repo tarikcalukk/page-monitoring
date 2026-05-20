@@ -12,13 +12,15 @@ process.env.JWT_SECRET = "test-secret-with-enough-length";
 process.env.DATA_FILE = path.join(testDir, "users.json");
 process.env.CORS_ORIGIN = "http://localhost:3000";
 process.env.LOG_LEVEL = "silent";
+process.env.EMAIL_DELIVERY_MODE = "memory";
 
 const { createApp } = require("../app");
 const userStore = require("../models/userStore");
+const mailService = require("../services/mailService");
 
 const app = createApp();
 
-async function registerAndLogin(
+async function registerAndVerify(
   email = "Test.User@example.com",
   password = "Password123",
 ) {
@@ -26,6 +28,19 @@ async function registerAndLogin(
     .post("/api/register")
     .send({ email, password })
     .expect(201);
+  const code = mailService.getOutbox().at(-1).code;
+  const verifyResponse = await request(app)
+    .post("/api/verify-email")
+    .send({ email, code })
+    .expect(200);
+  return verifyResponse.body.token;
+}
+
+async function registerAndLogin(
+  email = "Test.User@example.com",
+  password = "Password123",
+) {
+  await registerAndVerify(email, password);
   const loginResponse = await request(app)
     .post("/api/login")
     .send({ email, password })
@@ -39,6 +54,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await userStore.writeUsers([]);
+  mailService.clearOutbox();
 });
 
 afterAll(async () => {
@@ -57,13 +73,78 @@ describe("auth endpoints", () => {
       .send({ email: "New.User@Example.com", password: "Password123" })
       .expect(201);
 
-    expect(response.body).toEqual({ msg: "User registered successfully" });
+    expect(response.body).toEqual({
+      msg: "User registered successfully. Verification code sent.",
+      email: "new.user@example.com",
+      emailVerificationRequired: true,
+    });
 
     const users = await userStore.readUsers();
     expect(users).toHaveLength(1);
     expect(users[0].email).toBe("new.user@example.com");
+    expect(users[0].emailVerified).toBe(false);
+    expect(users[0].emailVerification.codeHash).toEqual(expect.any(String));
     expect(users[0].password).not.toBe("Password123");
     expect(users[0].password).toMatch(/^\$2[aby]\$/);
+    expect(mailService.getOutbox()).toHaveLength(1);
+  });
+
+  test("requires email verification before login and verifies with sent code", async () => {
+    await request(app)
+      .post("/api/register")
+      .send({ email: "verify@example.com", password: "Password123" })
+      .expect(201);
+
+    await request(app)
+      .post("/api/login")
+      .send({ email: "verify@example.com", password: "Password123" })
+      .expect(403)
+      .expect((response) => {
+        expect(response.body.needsEmailVerification).toBe(true);
+        expect(response.body.email).toBe("verify@example.com");
+      });
+
+    await request(app)
+      .post("/api/verify-email")
+      .send({ email: "verify@example.com", code: "000000" })
+      .expect(400);
+
+    const code = mailService.getOutbox().at(-1).code;
+    await request(app)
+      .post("/api/verify-email")
+      .send({ email: "verify@example.com", code })
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.token).toEqual(expect.any(String));
+        expect(response.body.user.emailVerified).toBe(true);
+        expect(response.body.user).not.toHaveProperty("emailVerification");
+      });
+
+    await request(app)
+      .post("/api/login")
+      .send({ email: "verify@example.com", password: "Password123" })
+      .expect(200);
+  });
+
+  test("resends verification code for unverified accounts", async () => {
+    await request(app)
+      .post("/api/register")
+      .send({ email: "resend@example.com", password: "Password123" })
+      .expect(201);
+
+    await userStore.updateUsers((users) => {
+      users[0].emailVerification.lastSentAt = new Date(Date.now() - 61000).toISOString();
+    });
+
+    await request(app)
+      .post("/api/resend-verification-code")
+      .send({ email: "resend@example.com" })
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.msg).toBe("Verification code sent.");
+      });
+
+    expect(mailService.getOutbox()).toHaveLength(2);
   });
 
   test("rejects weak passwords and duplicate registration", async () => {
