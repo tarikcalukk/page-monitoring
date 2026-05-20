@@ -10,7 +10,7 @@ const logger = require("./utils/logger");
 
 function createApp() {
   const app = express();
-  const clientBuildPath = path.resolve(__dirname, "..", "client_build");
+  const clientBuildPath = path.resolve(__dirname, "client_build");
   const hasClientBuild = fs.existsSync(clientBuildPath);
 
   configureSecurity(app);
