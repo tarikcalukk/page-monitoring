@@ -49,9 +49,12 @@ Frontend: `http://localhost:3000`
 
 Backend health check: `http://localhost:5000/health`
 
-Docker setup koristi dva servisa:
+Mailpit inbox for local verification codes: `http://localhost:8025`
+
+Docker setup koristi tri servisa:
 
 - `api`: Node/Express backend sa sistemskim Chromiumom za Puppeteer.
 - `client`: Nginx koji servira React production build.
+- `mailpit`: lokalni SMTP inbox za testiranje e-mail verifikacije.
 
 Korisnički runtime podaci se čuvaju u Docker volume-u `page_monitoring_data`, na putanji `/app/data/users.json` unutar backend containera.
