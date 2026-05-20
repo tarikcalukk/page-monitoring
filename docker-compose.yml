@@ -13,11 +13,13 @@ services:
       JWT_EXPIRES_IN: 2h
       DATA_FILE: /app/data/users.json
       LOG_LEVEL: info
-      EMAIL_DELIVERY_MODE: smtp
-      EMAIL_HOST: mailpit
-      EMAIL_PORT: 1025
-      EMAIL_SECURE: "false"
-      EMAIL_FROM: "Page Monitoring <no-reply@page-monitoring.local>"
+      EMAIL_DELIVERY_MODE: ${EMAIL_DELIVERY_MODE:-smtp}
+      EMAIL_HOST: ${EMAIL_HOST:-mailpit}
+      EMAIL_PORT: ${EMAIL_PORT:-1025}
+      EMAIL_SECURE: ${EMAIL_SECURE:-false}
+      EMAIL_FROM: ${EMAIL_FROM:-Page Monitoring <no-reply@page-monitoring.local>}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASS: ${EMAIL_PASS:-}
       PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
       PUPPETEER_SKIP_DOWNLOAD: "true"
     user: root

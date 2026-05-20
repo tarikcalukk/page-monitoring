@@ -51,23 +51,32 @@ function buildVerificationMessage(email, code) {
 
 async function sendVerificationCode(email, code) {
   const message = buildVerificationMessage(email, code);
+  return sendMail(message, { code });
+}
 
+async function sendMail(message, metadata = {}) {
   if (config.email.deliveryMode === "memory") {
-    outbox.push({ ...message, code, sentAt: new Date().toISOString() });
+    outbox.push({ ...message, ...metadata, sentAt: new Date().toISOString() });
     return { delivered: true, mode: "memory" };
   }
 
   if (config.email.deliveryMode === "console") {
     logger.info(
-      { email, verificationCode: code },
-      "Email verification code generated in console delivery mode.",
+      { to: message.to, ...metadata },
+      "Email generated in console delivery mode.",
     );
     return { delivered: true, mode: "console" };
   }
 
   const transporter = await getTransporter();
   await transporter.sendMail(message);
-  return { delivered: true, mode: "smtp" };
+  return { delivered: true, mode: deliveryModeLabel() };
+}
+
+function deliveryModeLabel() {
+  if (config.email.host === "mailpit") return "mailpit";
+  if (config.email.host) return "smtp";
+  return config.email.deliveryMode;
 }
 
 function getOutbox() {
@@ -79,6 +88,7 @@ function clearOutbox() {
 }
 
 module.exports = {
+  sendMail,
   sendVerificationCode,
   getOutbox,
   clearOutbox,

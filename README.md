@@ -58,3 +58,21 @@ Docker setup koristi tri servisa:
 - `mailpit`: lokalni SMTP inbox za testiranje e-mail verifikacije.
 
 Korisnički runtime podaci se čuvaju u Docker volume-u `page_monitoring_data`, na putanji `/app/data/users.json` unutar backend containera.
+
+### Slanje e-mailova
+
+Default Docker setup koristi Mailpit. To znači da se verifikacijski kodovi i izvještaji vide na `http://localhost:8025`, ali se ne isporučuju u stvarni Gmail inbox.
+
+Za stvarno slanje preko Gmail SMTP-a, u root `.env` postavi:
+
+```bash
+EMAIL_DELIVERY_MODE=smtp
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=465
+EMAIL_SECURE=true
+EMAIL_FROM="Page Monitoring <tvoj-email@gmail.com>"
+EMAIL_USER=tvoj-email@gmail.com
+EMAIL_PASS=tvoj-google-app-password
+```
+
+Za Gmail moraš koristiti Google App Password, ne običnu Gmail lozinku.

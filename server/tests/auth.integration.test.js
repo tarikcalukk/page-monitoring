@@ -277,4 +277,30 @@ describe("protected URL and settings endpoints", () => {
         expect(response.body.logRetentionDays).toBe(15);
       });
   });
+
+  test("sends report through configured mail service", async () => {
+    const token = await registerAndLogin("report@example.com", "Password123");
+    mailService.clearOutbox();
+
+    await request(app)
+      .post("/api/save-url")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ url: "https://example.com" })
+      .expect(200);
+
+    await request(app)
+      .post("/api/send-report")
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.sent).toBe(true);
+        expect(response.body.deliveryMode).toBe("memory");
+        expect(response.body.msg).toBe("Report sent to your email.");
+      });
+
+    const [report] = mailService.getOutbox();
+    expect(report.to).toBe("report@example.com");
+    expect(report.subject).toBe("Page Monitoring Report");
+    expect(report.attachments[0].filename).toBe("page-monitoring-report.csv");
+  });
 });
