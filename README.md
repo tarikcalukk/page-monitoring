@@ -35,3 +35,23 @@ npm ci
 npm run lint
 npm test
 ```
+
+## Docker
+
+Za lokalno pokretanje produkcijskog setup-a:
+
+```bash
+cp .env.docker.example .env
+docker compose up --build
+```
+
+Frontend: `http://localhost:3000`
+
+Backend health check: `http://localhost:5000/health`
+
+Docker setup koristi dva servisa:
+
+- `api`: Node/Express backend sa sistemskim Chromiumom za Puppeteer.
+- `client`: Nginx koji servira React production build.
+
+Korisnički runtime podaci se čuvaju u Docker volume-u `page_monitoring_data`, na putanji `/app/data/users.json` unutar backend containera.

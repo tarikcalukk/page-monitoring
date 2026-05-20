@@ -16,6 +16,7 @@ client/build
 # misc
 client/.env
 server/.env
+.env
 .codex/
 .DS_Store
 *.log
