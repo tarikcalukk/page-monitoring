@@ -33,16 +33,14 @@ function createApp() {
   app.use(routes);
 
   if (hasClientBuild) {
-    app.get("/*", (req, res, next) => {
-      if (
-        req.method !== "GET" ||
-        req.path.startsWith("/api") ||
-        req.path === "/health"
-      ) {
-        return next();
+    app.use((req, res, next) => {
+      if (req.method === "GET" && !req.path.startsWith("/api")) {
+        res.sendFile(path.join(clientBuildPath, "index.html"), (err) => {
+          if (err) next();
+        });
+      } else {
+        next();
       }
-
-      res.sendFile(path.join(clientBuildPath, "index.html"));
     });
   }
 
