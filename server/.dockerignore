@@ -1,0 +1,8 @@
+node_modules
+coverage
+.env
+users.json
+users.json.*.tmp
+users.json.*.bak
+*.log
+npm-debug.log*
