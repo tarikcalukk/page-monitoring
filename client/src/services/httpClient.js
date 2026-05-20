@@ -47,7 +47,9 @@ export async function request(path, options = {}) {
   const data = await readResponse(response).catch(() => null);
 
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403) notifyUnauthorized();
+    if (auth && (response.status === 401 || response.status === 403)) {
+      notifyUnauthorized();
+    }
     const message =
       response.status >= 500
         ? "Server error. Please try again later."

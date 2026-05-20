@@ -40,6 +40,13 @@ function Login() {
       await login({ email: normalizedEmail, password });
       navigate(redirectTo, { replace: true });
     } catch (error) {
+      if (error.details?.needsEmailVerification) {
+        navigate("/verify-email", {
+          replace: true,
+          state: { email: error.details.email || normalizedEmail },
+        });
+        return;
+      }
       setErrorMessage(getFriendlyErrorMessage(error));
     } finally {
       setIsSubmitting(false);

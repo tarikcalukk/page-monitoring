@@ -96,6 +96,42 @@
   font-weight: 700;
 }
 
+.auth-helper {
+  margin: 0 0 8px;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.45;
+  text-align: center;
+}
+
+.auth-dev-code {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 6px;
+  color: #f4ff8a;
+  font-weight: 800;
+  text-align: center;
+}
+
+.verification-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.auth-form .link-button {
+  min-height: auto;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: #f4ff8a;
+  text-decoration: underline;
+}
+
+.auth-form .link-button:hover:not(:disabled) {
+  background: transparent;
+  color: #ffffff;
+}
+
 .auth-message {
   border-radius: 6px;
   margin-bottom: 14px;

@@ -17,6 +17,22 @@ export const apiService = {
     });
   },
 
+  verifyEmail(payload) {
+    return request("/api/verify-email", {
+      method: "POST",
+      auth: false,
+      body: payload,
+    });
+  },
+
+  resendVerificationCode(payload) {
+    return request("/api/resend-verification-code", {
+      method: "POST",
+      auth: false,
+      body: payload,
+    });
+  },
+
   verifyToken() {
     return request("/api/verify");
   },

@@ -80,6 +80,26 @@ export function AuthProvider({ children }) {
     });
   }, []);
 
+  const verifyEmail = useCallback(async ({ email, code }) => {
+    const response = await apiService.verifyEmail({
+      email: normalizeEmail(email),
+      code,
+    });
+    if (response.token) {
+      storeToken(response.token);
+      setToken(response.token);
+      setUser(response.user);
+      setStatus("authenticated");
+    }
+    return response;
+  }, []);
+
+  const resendVerificationCode = useCallback(async ({ email }) => {
+    return apiService.resendVerificationCode({
+      email: normalizeEmail(email),
+    });
+  }, []);
+
   const value = useMemo(
     () => ({
       token,
@@ -90,9 +110,21 @@ export function AuthProvider({ children }) {
       login,
       logout,
       register,
+      verifyEmail,
+      resendVerificationCode,
       verifySession,
     }),
-    [token, user, status, login, logout, register, verifySession],
+    [
+      token,
+      user,
+      status,
+      login,
+      logout,
+      register,
+      verifyEmail,
+      resendVerificationCode,
+      verifySession,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

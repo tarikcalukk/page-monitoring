@@ -50,11 +50,14 @@ function Register() {
 
     setIsSubmitting(true);
     try {
-      await register({ email: normalizedEmail, password });
-      setSuccessMessage("Account created successfully. Redirecting to login.");
-      setTimeout(() => {
-        navigate("/");
-      }, 700);
+      const response = await register({ email: normalizedEmail, password });
+      navigate("/verify-email", {
+        replace: true,
+        state: {
+          email: response?.email || normalizedEmail,
+          devVerificationCode: response?.devVerificationCode,
+        },
+      });
     } catch (error) {
       setErrorMessage(getFriendlyErrorMessage(error));
     } finally {

@@ -4,17 +4,21 @@ import {
   FaChartBar,
   FaClipboardList,
   FaCog,
+  FaExclamationTriangle,
   FaGlobe,
   FaMoon,
+  FaServer,
   FaSignOutAlt,
   FaTachometerAlt,
   FaUserCircle,
 } from "react-icons/fa";
 import "./Home.css";
 import Account from "./Account/Account";
+import Alerts from "./Alerts/Alerts";
 import Dashboard from "./Dashboard/Dashboard";
 import Logs from "./Logs/Logs";
 import Settings from "./Settings/Settings";
+import Status from "./Status/Status";
 import Statistics from "./Statistics/Statistics";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNotifications } from "../../hooks/useNotifications";
@@ -31,6 +35,18 @@ const TABS = [
     id: "statistics",
     label: "Statistics",
     icon: FaChartBar,
+    group: "primary",
+  },
+  {
+    id: "status",
+    label: "Status",
+    icon: FaServer,
+    group: "primary",
+  },
+  {
+    id: "alerts",
+    label: "Alerts",
+    icon: FaExclamationTriangle,
     group: "primary",
   },
   {
@@ -92,6 +108,10 @@ function Home() {
         return <Settings />;
       case "logs":
         return <Logs />;
+      case "status":
+        return <Status />;
+      case "alerts":
+        return <Alerts />;
       case "dashboard":
         return <Dashboard />;
       case "statistics":
